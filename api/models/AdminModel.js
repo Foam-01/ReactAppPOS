@@ -1,7 +1,7 @@
 const e = require("cors");
 const conn = require("../connect");
 const { DataTypes } = require("sequelize");
-const AdminModel = conn.define("admin", {
+const AdminModel = conn.define("admins", {
   id: {
     type: DataTypes.BIGINT,
     autoIncrement: true,
