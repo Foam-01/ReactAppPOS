@@ -1,26 +1,30 @@
 const conn = require('../connect');
 const { DataTypes } = require('sequelize');
 
-const PackageModel = conn.define('package', {
+const PackageModel = conn.define(
+  "packages",
+  {
     id: {
-        type: DataTypes.BIGINT,
-        primaryKey: true,
-        autoIncrement: true
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
     },
     name: {
-        type: DataTypes.STRING(255)
+      type: DataTypes.STRING(255),
     },
     bill_amount: {
-        type: DataTypes.BIGINT
+      type: DataTypes.BIGINT,
     },
     price: {
-        type: DataTypes.BIGINT
-    }
-}, {
+      type: DataTypes.BIGINT,
+    },
+  },
+  {
     // กำหนดชื่อคอลัมน์ Timestamps ให้ตรงกับในฐานข้อมูล (จากรูปที่ 6)
     timestamps: true,
-    createdAt: 'createdAt',
-    updatedAt: 'updateAt' // ระบุชื่อเป็น updateAt ตามที่ปรากฏใน pgAdmin ของคุณ
-});
+    createdAt: "createdAt",
+    updatedAt: "updateAt", // ระบุชื่อเป็น updateAt ตามที่ปรากฏใน pgAdmin ของคุณ
+  },
+);
 
 module.exports = PackageModel;
