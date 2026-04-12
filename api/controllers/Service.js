@@ -1,7 +1,5 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
-// ตั้งค่า Secret กลางไว้ที่นี่ที่เดียวเลยครับ จะได้ไม่ต้องพิมพ์ซ้ำหลายรอบ
 const secret = process.env.TOKEN_SECRET || process.env.secret || "mykey";
 
 module.exports = {

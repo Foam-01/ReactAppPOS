@@ -1,5 +1,5 @@
 const config = {
-  api_path: "http://35.187.226.72:3000",
+  api_path: "http://localhost:3000",
   token_name: "admin_token",
   headers: () => {
     return {

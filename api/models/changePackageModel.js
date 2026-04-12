@@ -1,6 +1,6 @@
 const conn = require("../connect");
 const { DataTypes } = require("sequelize");
-const ChangePackageModel = conn.define("changePackages", {
+const ChangePackageModel = conn.define("ChangePackages", {
   id: {
     type: DataTypes.BIGINT,
     autoIncrement: true,
