@@ -1,24 +1,36 @@
 version: '3.8'
 
-# ประกาศรายชื่อลูกน้อง (Services) ที่เรามี
 services:
+  # --- เพิ่ม Database เข้าไปตรงนี้ครับ ---
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234 # เปลี่ยนให้ตรงกับที่ตั้งในโค้ด API นะครับ
+      POSTGRES_DB: db_workshop_pos
+    ports:
+      - "5432:5432"
+
   # 1. ลูกน้องคนที่ 1: API (Backend)
   api:
-    build: ./api # บอกผู้จัดการว่าสูตรทำกล่องอยู่ที่โฟลเดอร์ api นะ
+    build: ./api
     ports:
-      - "3000:3000" # ถ้ามีคนเข้าพอร์ต 3000 ของเครื่องเรา ให้ส่งไปที่พอร์ต 3000 ของกล่องนี้
-    restart: always # ถ้ากล่องพังหรือรีสตาร์ทเครื่อง ให้มันเปิดตัวเองขึ้นมาใหม่เสมอ
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - db # บอก API ว่าต้องรอให้ db รันขึ้นมาก่อนนะ
 
-  # 2. ลูกน้องคนที่ 2: Backoffice (ระบบหลังบ้าน)
+  # 2. ลูกน้องคนที่ 2: Backoffice
   backoffice:
-    build: ./backoffice/app # สูตรอยู่ที่นี่
+    build: ./backoffice/app
     ports:
-      - "3002:80" # ถ้ามีคนเข้าพอร์ต 3002 ของเครื่องเรา ให้ส่งไปที่พอร์ต 80 (พอร์ตของ Nginx) ในกล่อง
+      - "3002:80"
     restart: always
 
-  # 3. ลูกน้องคนที่ 3: Web (หน้าเว็บลูกค้า)
+  # 3. ลูกน้องคนที่ 3: Web
   web:
-    build: ./web/app # สูตรอยู่ที่นี่
+    build: ./web/app
     ports:
-      - "3001:80" # ถ้ามีคนเข้าพอร์ต 3001 ของเครื่องเรา ให้ส่งไปที่พอร์ต 80 ในกล่อง
+      - "3001:80"
     restart: always
