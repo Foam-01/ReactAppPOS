@@ -20,6 +20,10 @@ FROM nginx:alpine
 # ก๊อปปี้โฟลเดอร์ /build (ที่ได้จากร่างที่ 1) มาใส่ในโฟลเดอร์ของ Nginx
 COPY --from=builder /app/build /usr/share/nginx/html
 
+# --- เพิ่มบรรทัดนี้เข้าไปครับ ---
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# ----------------------------
+
 # เปิดประตูหมายเลข 80 (พอร์ตมาตรฐานสำหรับเว็บ)
 EXPOSE 80
 
