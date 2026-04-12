@@ -16,15 +16,15 @@ app.post("/admin/signin", async (req, res) => {
     });
 
     if (admin != null) {
-      let token = jwt.sign({ id: admin.id }, process.env.secret);
-      // ใช้ return เพื่อให้จบฟังก์ชันทันที ไม่ไปรันบรรทัดล่างต่อ
+      // ✅ แก้ไขตรงนี้ให้ดึง Secret ให้ถูกจุด
+      const secret = process.env.TOKEN_SECRET || process.env.secret || "mykey";
+      let token = jwt.sign({ id: admin.id }, secret);
+
       return res.send({ token: token, message: "success" });
     }
 
-    // ถ้าไม่เจอ user จะลงมาทำงานที่นี่เพียงครั้งเดียว
     res.status(401).send({ message: "not found" });
   } catch (e) {
-    // ป้องกันกรณีเกิด error หลังจากส่ง headers ไปแล้ว
     if (!res.headersSent) {
       res.status(500).send({ message: e.message });
     }

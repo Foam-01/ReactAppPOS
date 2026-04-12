@@ -1,36 +1,49 @@
 version: '3.8'
 
 services:
-  # --- เพิ่ม Database เข้าไปตรงนี้ครับ ---
+  # --- Database: เก็บข้อมูลพื้นฐาน ---
   db:
     image: postgres:15
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234 # เปลี่ยนให้ตรงกับที่ตั้งในโค้ด API นะครับ
+      POSTGRES_PASSWORD: 1234
       POSTGRES_DB: db_workshop_pos
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-  # 1. ลูกน้องคนที่ 1: API (Backend)
+  # --- API: ส่วนคำนวณและเชื่อมต่อฐานข้อมูล ---
   api:
     build: ./api
     ports:
       - "3000:3000"
     restart: always
+    environment:
+      - TOKEN_SECRET=MySecretKeyFoamPos2026  # แก้บั๊ก secretOrPrivateKey must have a value
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASS=1234
+      - DB_NAME=db_workshop_pos
     depends_on:
-      - db # บอก API ว่าต้องรอให้ db รันขึ้นมาก่อนนะ
+      - db
+    volumes:
+      - ./api/uploads:/app/uploads # เชื่อมโฟลเดอร์รูปภาพจากเครื่องขึ้น Cloud
 
-  # 2. ลูกน้องคนที่ 2: Backoffice
+  # --- Backoffice: ระบบจัดการหลังบ้าน ---
   backoffice:
     build: ./backoffice/app
     ports:
       - "3002:80"
     restart: always
 
-  # 3. ลูกน้องคนที่ 3: Web
+  # --- Web: หน้าเว็บลูกค้า/ขายสินค้า ---
   web:
     build: ./web/app
     ports:
       - "3001:80"
     restart: always
+
+volumes:
+  postgres_data:
