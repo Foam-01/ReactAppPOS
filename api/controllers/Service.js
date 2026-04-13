@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const secret = process.env.TOKEN_SECRET || process.env.secret || "mykey";
+require("dotenv").config(); // 👈 โหลดเพื่อให้รู้จัก TOKEN_SECRET
+
+// 🌟 ดึงค่า Secret จาก .env ถ้าไม่มีให้ใช้ "mykey" เป็นค่าสำรอง
+const secret = process.env.TOKEN_SECRET || "mykey";
 
 module.exports = {
   getToken: (req) => {
@@ -17,6 +19,7 @@ module.exports = {
 
     if (token) {
       try {
+        // 🌟 ใช้ secret ที่ดึงมาจาก .env
         const verify = jwt.verify(token, secret);
         if (verify) {
           return next();
