@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const BankModel = require("../models/Temp2");
+const BankModel = require("../models/BankModel");
 
 app.get("/bank/list", async (req, res) => {
   try {

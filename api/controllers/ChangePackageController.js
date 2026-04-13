@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const Service = require("./Service");
-const ChangePackageModel = require("../models/Temp1");
+const ChangePackageModel = require("../models/ChangePackageModel");
 
 app.get("/changePackage/list", Service.isLogin, async (req, res) => {
   try {
