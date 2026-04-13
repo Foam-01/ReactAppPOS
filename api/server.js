@@ -22,6 +22,7 @@ app.use(require("./controllers/ฺBankController"));
 app.use(require("./controllers/AdminController"));
 app.use(require("./controllers/ChangePackageController"));
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+// ✅ แบบใหม่ (แก้ให้เป็นแบบนี้ครับ)
+app.listen(3000, '0.0.0.0', () => {
+  console.log("Server is running on port 3000");
 });
