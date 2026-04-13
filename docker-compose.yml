@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # 1. ฐานข้อมูล PostgreSQL
+  db:
+    image: postgres:15
+    container_name: pos_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: db_workshop_pos
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data # 🌟 สำคัญ: ป้องกันข้อมูลหายเวลาปิด/เปิดเครื่อง
+
+  # 2. Backend API
+  api:
+    build: ./api
+    container_name: pos_api
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file:
+      - ./api/.env # 🌟 ดึงความลับจากไฟล์ .env ที่เราเพิ่งสร้าง
+    volumes:
+      - ./api/uploads:/app/uploads # 🌟 สำคัญ: เชื่อมโฟลเดอร์รูปภาพ รูปจะได้ไม่หาย
+
+  # 3. Frontend Web (หน้าบ้าน)
+  web:
+    build: ./web/app
+    container_name: pos_web
+    restart: always
+    ports:
+      - "80:80" # 🌟 เข้าเว็บผ่าน http://localhost ได้เลย (ไม่ต้องมีพอร์ต)
+    depends_on:
+      - api
+
+  # 4. Frontend Backoffice (หลังบ้าน)
+  backoffice:
+    build: ./backoffice/app
+    container_name: pos_backoffice
+    restart: always
+    ports:
+      - "8080:80" # 🌟 เข้าหลังบ้านผ่าน http://localhost:8080
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
