@@ -94,12 +94,12 @@ A full-stack cloud-based Point of Sale (POS) system with inventory management, r
 
 POS (Staff)
 
-Username: 1234
+Username: 1234 <br>
 Password: 1234
 
 Backoffice (Admin)
 
-Username: admin1
+Username: admin1 <br>
 Password: 1234
 
 
