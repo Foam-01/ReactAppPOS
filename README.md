@@ -1,3 +1,33 @@
+# ☁️ FoamPos - POS on Cloud System
+
+A full-stack cloud-based Point of Sale (POS) system with inventory management, real-time sales processing, and SaaS subscription model.
+
+---
+
+## 🔧 Tech Stack
+
+* Frontend: React.js + Bootstrap 5
+* Backend: Node.js + Express + JWT
+* Database: PostgreSQL
+* DevOps: Docker, Nginx, GCP
+* Tools: Postman, GitHub
+
+---
+
+## 🚀 Features
+
+* 🔐 Authentication (JWT)
+* 🛒 POS Sales System (Real-time)
+* 📦 Inventory & Stock Management
+* 📊 Dashboard & Sales Analytics
+* 👤 Role-based Access (Admin/User)
+* 💳 Subscription Plans (Free / Pro / Enterprise)
+* 🏢 Backoffice Management System
+
+---
+
+## 🖥️ Screenshots
+
 <img width="1913" height="971" alt="image" src="https://github.com/user-attachments/assets/2bdf11d9-6f2e-40bb-a8ad-5ad8786201aa" />
 <img width="1915" height="960" alt="image" src="https://github.com/user-attachments/assets/636a3bd3-0881-4da6-8061-28fc4ab18443" />
 <img width="1919" height="966" alt="image" src="https://github.com/user-attachments/assets/3612cceb-2a26-455e-8747-7c4e0835ddab" />
@@ -50,6 +80,43 @@
 <img width="1918" height="960" alt="image" src="https://github.com/user-attachments/assets/00cd7122-3331-44d1-a4ee-9dfcc5a11025" />
 <img width="1919" height="969" alt="image" src="https://github.com/user-attachments/assets/8d416b7e-517b-4585-9b8a-bafce2e60360" />
 <img width="1916" height="970" alt="image" src="https://github.com/user-attachments/assets/cdcc7e8f-8819-4f24-ab45-43f72da3428c" />
+
+---
+
+## 🔗 Demo & Repository
+
+* Live POS Demo: http://35.187.226.72/
+* Live POS Backoffice Demo: http://35.187.226.72:8080/
+* GitHub: https://github.com/Foam-01/ReactAppPOS
+
+---
+##🔐 Demo Account (For Testing)
+
+POS (Staff)
+
+Username: 1234
+Password: 1234
+
+Backoffice (Admin)
+
+Username: admin1
+Password: 1234
+
+
+## 🏁 Getting Started
+
+```bash
+git clone https://github.com/Foam-01/ReactAppPOS
+cd backend
+npm install
+npm run dev
+```
+
+
+
+
+
+
 
 
 
