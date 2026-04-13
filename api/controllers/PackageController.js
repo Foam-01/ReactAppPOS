@@ -3,8 +3,8 @@ const app = express();
 const PackageModel = require("../models/PackageModel");
 const MemberModel = require("../models/MemberModel");
 const Service = require("./Service");
-const BankModel = require("../models/Temp2");
-const ChangePackageModel = require("../models/Temp1");
+const BankModel = require("../models/BankModel");
+const ChangePackageModel = require("../models/ChangePackageModel");
 
 app.get("/package/list", async (req, res) => {
   try {
@@ -28,7 +28,7 @@ app.post("/package/memberRegister", async (req, res) => {
 
 app.get("/package/countBill", Service.isLogin, async (req, res) => {
   try {
-    const BillSaleModel = require("../models/Temp3");
+    const BillSaleModel = require("../models/BillSaleModel");
     const { Op } = require("sequelize");
 
     // สร้างวันที่เริ่มต้นของเดือนปัจจุบัน (วันที่ 1 เวลา 00:00:00)

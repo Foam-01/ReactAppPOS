@@ -4,7 +4,7 @@ const app = express();
 require("dotenv").config();
 const service = require("./Service");
 
-const BillSaleModel = require("../models/Temp3");
+const BillSaleModel = require("../models/BillSaleModel");
 const BillSaleDetailModel = require("../models/BillSaleDetailModel");
 const { where, Sequelize } = require("sequelize");
 
