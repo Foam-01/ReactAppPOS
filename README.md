@@ -1,28 +1,29 @@
-# ☁️ FoamPos - POS on Cloud System
 
-A full-stack cloud-based Point of Sale (POS) system with inventory management, real-time sales processing, and SaaS subscription model.
+# ☁️ FoamPos - Full-Stack Cloud POS System
+
+A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS (Software as a Service) architecture, featuring multi-tier subscription models and a robust administrative backoffice.
 
 ---
 
 ## 🔧 Tech Stack
 
-* Frontend: React.js + Bootstrap 5
-* Backend: Node.js + Express + JWT
-* Database: PostgreSQL
-* DevOps: Docker, Nginx, GCP
-* Tools: Postman, GitHub
+* **Frontend:** React.js, Bootstrap 5, Axios (State management & Routing)
+* **Backend:** Node.js, Express.js (RESTful API Design)
+* **Database:** PostgreSQL (Relational Data Modeling)
+* **Security:** JSON Web Token (JWT), HTTPS (SSL/TLS via Cloudflare)
+* **DevOps:** Docker & Docker Compose, Nginx (Reverse Proxy & SPA Routing), Google Cloud Platform (GCP)
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-* 🔐 Authentication (JWT)
-* 🛒 POS Sales System (Real-time)
-* 📦 Inventory & Stock Management
-* 📊 Dashboard & Sales Analytics
-* 👤 Role-based Access (Admin/User)
-* 💳 Subscription Plans (Free / Pro / Enterprise)
-* 🏢 Backoffice Management System
+* 🔐 **Secure Authentication:** User-level security using JWT for session management.
+* 🛒 **Real-time POS Interface:** Seamless sales processing with instant total calculation and change management.
+* 📦 **Inventory Management:** Centralized stock tracking with real-time updates and low-stock indicators.
+* 📊 **Sales Analytics:** Interactive dashboard providing sales insights and visual data trends.
+* 👤 **Role-Based Access Control (RBAC):** Distinct interfaces and permissions for Staff and Administrators.
+* 💳 **SaaS Subscription Model:** Pre-configured tiers including Free, Pro, and Enterprise plans.
+* 🏢 **Enterprise Backoffice:** Dedicated portal for managing members, packages, and system-wide configurations.
 
 ---
 
@@ -85,40 +86,52 @@ A full-stack cloud-based Point of Sale (POS) system with inventory management, r
 
 ---
 
-## 🔗 Demo & Repository
+## 🔗 Live Demo (Production)
 
-* Live POS Demo: http://35.187.226.72/
-* Live POS Backoffice Demo: http://35.187.226.72:8080/
-* GitHub: https://github.com/Foam-01/ReactAppPOS
+The system is deployed on a secure cloud infrastructure:
+
+* **🌐 POS Frontend:** [https://pos.skin](https://pos.skin)
+* **🏢 Backoffice Portal:** [https://admin.pos.skin](https://admin.pos.skin)
+* **🔌 API Service:** [https://api.pos.skin](https://api.pos.skin)
 
 ---
-##🔐 Demo Account (For Testing)
 
-POS (Staff)
+## 🔐 Test Accounts
 
-Username: 1234 <br>
-Password: 1234
+### POS Terminal (Staff Role)
+* **Username:** `1234`
+* **Password:** `1234`
 
-Backoffice (Admin)
+### Management System (Admin Role)
+* **Username:** `admin1`
+* **Password:** `1234`
 
-Username: admin1 <br>
-Password: 1234
+---
 
+## 🏁 Getting Started (Local Development)
 
-## 🏁 Getting Started
+1.  **Clone the Repository**
+    ```bash
+    git clone [https://github.com/Foam-01/ReactAppPOS.git](https://github.com/Foam-01/ReactAppPOS.git)
+    cd ReactAppPOS
+    ```
 
-```bash
-git clone https://github.com/Foam-01/ReactAppPOS
-cd backend
-npm install
-npm run dev
-```
+2.  **Environment Setup**
+    Ensure you have **Docker** and **Docker Compose** installed.
 
+3.  **Run with Docker Compose**
+    ```bash
+    docker-compose up --build
+    ```
+    The application will be accessible at `http://localhost:80` (Web) and `http://localhost:8080` (Backoffice).
 
+---
 
+## 👤 Author
 
-
-
+**Sitthidech Thongsawamg (Foam)**
+* **GitHub:** [@Foam-01](https://github.com/Foam-01)
+* **Specialization:** Full-Stack Software Development & DevOps Engineering
 
 
 
