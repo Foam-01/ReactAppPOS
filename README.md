@@ -11,7 +11,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 * **Backend:** Node.js, Express.js (RESTful API Design)
 * **Database:** PostgreSQL (Relational Data Modeling)
 * **Security:** JSON Web Token (JWT), HTTPS (SSL/TLS via Cloudflare)
-* **DevOps:** Docker & Docker Compose, Nginx (Reverse Proxy & SPA Routing), Google Cloud Platform (GCP)
+* **DevOps:** Docker & Docker Compose, Nginx (Reverse Proxy & SPA Routing), Google Cloud Platform (GCP) ,Portainer.io
 
 ---
 
@@ -67,6 +67,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 <img width="1918" height="964" alt="image" src="https://github.com/user-attachments/assets/40fe6db5-1571-4cb4-8a56-5f524221a89d" />
 <img width="1912" height="957" alt="image" src="https://github.com/user-attachments/assets/60e23075-e1ee-4d0d-a17b-b2fb947f6588" />
 <img width="1172" height="897" alt="image" src="https://github.com/user-attachments/assets/8ca0a028-3113-4b86-b763-b10c91ae4ea7" />
+<img width="1919" height="959" alt="image" src="https://github.com/user-attachments/assets/9885b777-36db-4688-8af5-c88a0b43904d" />
 
 
 
