@@ -1,5 +1,5 @@
 const config = {
-  api_path: 'http://35.187.226.72:3000',
+  api_path: "https://api.pos.skin",
   token_name: "pos_token",
   headers: () => {
     return {
