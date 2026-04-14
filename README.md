@@ -64,6 +64,7 @@ A full-stack cloud-based Point of Sale (POS) system with inventory management, r
 <img width="1915" height="966" alt="image" src="https://github.com/user-attachments/assets/da7ed6de-ee15-4ee7-88c1-51555792cc6b" />
 <img width="1919" height="1017" alt="image" src="https://github.com/user-attachments/assets/ff341efb-2d64-4684-aa19-325f7608dcd9" />
 <img width="1918" height="964" alt="image" src="https://github.com/user-attachments/assets/40fe6db5-1571-4cb4-8a56-5f524221a89d" />
+<img width="1915" height="967" alt="image" src="https://github.com/user-attachments/assets/5ff795b4-432f-4814-b310-58331432ab47" />
 
 
 <img width="1919" height="966" alt="image" src="https://github.com/user-attachments/assets/ce537238-089e-419b-a39c-658794443a6c" />
