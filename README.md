@@ -7,11 +7,12 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 
 ## 🔧 Tech Stack
 
-* **Frontend:** React.js, Bootstrap 5, Axios (State management & Routing)
-* **Backend:** Node.js, Express.js (RESTful API Design)
+* **Frontend:** React.js • Bootstrap 5 • Axios (State management & Routing)
+* **Backend:** Node.js • Express.js (RESTful API Design)
 * **Database:** PostgreSQL (Relational Data Modeling)
-* **Security:** JSON Web Token (JWT), HTTPS (SSL/TLS via Cloudflare)
-* **DevOps:** Docker & Docker Compose, Nginx (Reverse Proxy & SPA Routing), Google Cloud Platform (GCP) ,Portainer.io,Jenkins
+* **Security:** JSON Web Token (JWT) • HTTPS (SSL/TLS via Cloudflare)
+* **DevOps:** Docker & Docker Compose • Nginx (Reverse Proxy) • GCP • Portainer.io • Jenkins
+* 
 
 ---
 
