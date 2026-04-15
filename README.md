@@ -12,7 +12,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 * **Database:** PostgreSQL (Relational Data Modeling)
 * **Security:** JSON Web Token (JWT) • HTTPS (SSL/TLS via Cloudflare)
 * **DevOps:** Docker & Docker Compose • Nginx (Reverse Proxy) • GCP • Portainer.io • Jenkins
-* 
+  
 
 ---
 
