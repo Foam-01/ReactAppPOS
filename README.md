@@ -72,6 +72,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 <img width="1914" height="965" alt="image" src="https://github.com/user-attachments/assets/d79be5e0-3f14-4676-86e3-afc60b1f209d" />
 <img width="1916" height="950" alt="image" src="https://github.com/user-attachments/assets/2eec0bbe-7a1a-4ed6-9626-929dedcb4293" />
 <img width="1913" height="958" alt="image" src="https://github.com/user-attachments/assets/ce450653-f679-4a5f-b488-8611a2d17036" />
+<img width="1911" height="900" alt="image" src="https://github.com/user-attachments/assets/ef5b8707-f2ed-409f-bf38-13ef10da7119" />
 
 
 
