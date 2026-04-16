@@ -60,6 +60,11 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 <img width="1919" height="963" alt="image" src="https://github.com/user-attachments/assets/48062c3b-b6b6-445d-9df7-e84bcaaabdb3" />
 <img width="1919" height="972" alt="image" src="https://github.com/user-attachments/assets/fab00635-475d-49fc-ab70-ca4f74f0fa64" />
 <img width="1919" height="1023" alt="image" src="https://github.com/user-attachments/assets/3354b022-392f-4a66-b1f8-ead5cb71cd0d" />
+
+<img width="1919" height="961" alt="image" src="https://github.com/user-attachments/assets/3e0cd779-0409-4b33-910f-8ee53187b980" />
+<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/56615d58-c7b7-4218-9e5a-60c881788df7" />
+
+
 <img width="1918" height="969" alt="image" src="https://github.com/user-attachments/assets/17130f6a-bb67-408d-b4bd-d344752a6037" />
 <img width="1919" height="890" alt="image" src="https://github.com/user-attachments/assets/a94402dd-712f-49b7-91b2-42997e295413" />
 <img width="1915" height="979" alt="image" src="https://github.com/user-attachments/assets/ea05cf18-9bc7-40ea-ad77-298f6a581f6a" />
@@ -69,8 +74,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 <img width="1912" height="957" alt="image" src="https://github.com/user-attachments/assets/60e23075-e1ee-4d0d-a17b-b2fb947f6588" />
 <img width="1415" height="875" alt="image" src="https://github.com/user-attachments/assets/623928fd-ce0e-4d6b-bcfb-20833cd1a7da" />
 
-<img width="1919" height="961" alt="image" src="https://github.com/user-attachments/assets/3e0cd779-0409-4b33-910f-8ee53187b980" />
-<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/56615d58-c7b7-4218-9e5a-60c881788df7" />
+
 
 
 <img width="1913" height="1015" alt="image" src="https://github.com/user-attachments/assets/56460958-1d12-41db-87ab-f113cf3b2655" />
