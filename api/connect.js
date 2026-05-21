@@ -3,7 +3,6 @@ require("dotenv").config();
 
 let sequelize;
 
-// 💡 เช็คว่าถ้ามี DATABASE_URL (ตอนรันบน Render) ให้ดึงใช้ทันที
 if (process.env.DATABASE_URL) {
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "postgres",
@@ -13,10 +12,11 @@ if (process.env.DATABASE_URL) {
         require: true,
         rejectUnauthorized: false,
       },
+      // 💡 เพิ่มบรรทัดนี้เข้าไปครับ เพื่อแก้ปัญหา (ENOIDENTIFIER) บน Render
+      application_name: "foam-pos",
     },
   });
 } else {
-  // 💻 ถ้าไม่มี (ตอนรันเทสในเครื่อง Local) ให้ใช้แบบแยกบรรทัดเหมือนเดิม
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
