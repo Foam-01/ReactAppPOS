@@ -117,7 +117,7 @@ The system is deployed on a secure cloud infrastructure:
 
 * **🌐 POS Frontend:** [https://pos.skin](https://pos.skin)
 * **🏢 Backoffice Portal:** [https://admin.pos.skin](https://admin.pos.skin)
-* **🔌 API Service:** [https://api.pos.skin](https://api.pos.skin)
+* **🔌 API Service:** [https://api.pos.skin]([https://api.pos.skin](https://foam-pos-api.onrender.com))
 
 ---
 
