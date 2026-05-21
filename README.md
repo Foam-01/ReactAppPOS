@@ -115,7 +115,7 @@ A comprehensive, production-ready Point of Sale (POS) solution built with a SaaS
 
 The system is deployed on a secure cloud infrastructure:
 
-* **🌐 POS Frontend:** https://foam-pos-p6tq8fl0t-foam-01s-projects.vercel.app/       /https://foam-pos-p6tq8fl0t-foam-01s-projects.vercel.app/login
+* **🌐 POS Frontend:** [https://pos.skin](https://pos.skin)
 * **🏢 Backoffice Portal:** [https://admin.pos.skin](https://admin.pos.skin)
 * **🔌 API Service:** [https://api.pos.skin](https://api.pos.skin)
 
