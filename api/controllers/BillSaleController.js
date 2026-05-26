@@ -54,9 +54,16 @@ app.post("/billSele/sele", service.isLogin, async (req, res) => {
     if (billSaleDetail == null) {
       item.qty = 1;
 
+      // 🔥 [จุดแก้ไข] สั่งลบคีย์ id ออกจาก object ทิ้งอย่างเด็ดขาด ป้องกันบั๊ก null value
+      delete item.id;
+
       await BillSaleDetailModel.create(item);
     } else {
       item.qty = parseInt(billSaleDetail.qty) + 1;
+
+      // 🔥 [จุดแก้ไข] กันเหนียวฝั่ง update ด้วย สั่งลบคีย์ id ออกเช่นกัน
+      delete item.id;
+
       await BillSaleDetailModel.update(item, {
         where: {
           id: billSaleDetail.id,
