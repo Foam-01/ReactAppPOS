@@ -117,7 +117,7 @@ app.delete("/billSale/deleteItem/:id", service.isLogin, async (req, res) => {
     res.send({ message: "success" });
   } catch (e) {
     res.statusCode = 500;
-    res.send({ message: "success" });
+    res.send({ message: e.message });
   }
 });
 
@@ -137,7 +137,7 @@ app.post("/billSale/updateQty", service.isLogin, async (req, res) => {
     res.send({ message: "success" });
   } catch (e) {
     res.statusCode = 500;
-    res.send({ message: "success" });
+    res.send({ message: e.message });
   }
 });
 
@@ -158,7 +158,7 @@ app.get("/billSale/endSale", service.isLogin, async (req, res) => {
     res.send({ message: "success" });
   } catch (e) {
     res.statusCode = 500;
-    res.send({ message: "success" });
+    res.send({ message: e.message });
   }
 });
 

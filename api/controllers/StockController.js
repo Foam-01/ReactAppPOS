@@ -11,6 +11,8 @@ app.post('/stock/save', Service.isLogin, async (req, res  ) => {
             userId: Service.getMemberId(req)
         }
 
+        delete payload.id;
+
         await StockModel.create(payload)
 
         res.send({ message: 'success'});

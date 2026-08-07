@@ -7,6 +7,7 @@ const Service = require('./Service');
 app.post('/product/insert', Service.isLogin, async (req, res) => {
     try {
         let payload = req.body;
+        delete payload.id;
         payload.userId = Service.getMemberId(req)
         const result =  await  ProductModel.create(payload);
         res.send({ result: result, message: 'success'})
@@ -77,6 +78,7 @@ app.get('/product/listForSale', Service.isLogin, async (req, res) => {
                 where: {
                     isMain: true
                 },
+                required: false
             }
         })
 

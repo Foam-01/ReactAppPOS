@@ -42,17 +42,15 @@ app.post("/productImage/insert", Service.isLogin, async (req, res) => {
 
     const uploadPath = __dirname + "/../uploads/" + fullNewName;
 
-    await productImage.mv(uploadPath, async (err) => {
-      if (err) throw new Error(err);
+    await productImage.mv(uploadPath);
 
-      await ProductImageModel.create({
-        isMain: false,
-        imageName: fullNewName,
-        productId: req.body.productId,
-      });
-
-      res.send({ message: "success" });
+    await ProductImageModel.create({
+      isMain: false,
+      imageName: fullNewName,
+      productId: req.body.productId,
     });
+
+    res.send({ message: "success" });
   } catch (e) {
     res.statusCode = 500;
     res.send({ message: e.message });

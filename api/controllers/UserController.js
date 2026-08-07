@@ -22,6 +22,7 @@ app.get("/user/list", Service.isLogin, async (req, res) => {
 app.post("/user/insert", Service.isLogin, async (req, res) => {
   try {
     let payload = req.body;
+    delete payload.id;
     payload.userId = Service.getMemberId(req);
     await UserModel.create(payload);
     res.send({ message: "success" });
