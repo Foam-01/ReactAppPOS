@@ -390,6 +390,10 @@ function Sale() {
                                     item.productlmages[0].imageName
                                   : "https://via.placeholder.com/150?text=No+Image"
                               }
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://via.placeholder.com/150?text=No+Image";
+                              }}
                               alt={item.name}
                             />
                             <div className="position-absolute bottom-0 end-0 bg-primary text-white px-2 py-1 small fw-bold">
