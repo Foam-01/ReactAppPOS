@@ -27,4 +27,6 @@ const PackageModel = conn.define(
   },
 );
 
+PackageModel.sync({ alter: true });
+
 module.exports = PackageModel;
