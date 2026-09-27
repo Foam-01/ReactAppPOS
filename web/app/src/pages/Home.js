@@ -40,7 +40,7 @@ function Home() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถโหลดข้อมูล Dashboard ได้",
+        text: "โหลดข้อมูลไม่สำเร็จ กด 'รีเฟรชข้อมูล' เพื่อลองใหม่",
         icon: "error",
       });
     } finally {
@@ -419,7 +419,7 @@ function Home() {
                 <tfoot className="table-light border-top border-2">
                   <tr className="fw-bold">
                     <td colSpan="3" className="text-end py-3">
-                      รวมทั้งสิ้นสุทธิ:
+                      รวมทั้งสิ้น:
                     </td>
                     <td className="text-end pe-3 py-3 h5 mb-0 text-success font-monospace fw-bold">
                       {selectedBill.billSaleDetails

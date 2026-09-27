@@ -20,7 +20,7 @@ function Login() {
                 if (res.data.message === 'success') {
                     Swal.fire({
                         title: "เข้าสู่ระบบสำเร็จ",
-                        text: "ยินดีต้อนรับเข้าสู่ระบบ",
+                        text: "ยินดีต้อนรับ",
                         icon: "success",
                         timer: 2000,
                     })
@@ -29,7 +29,7 @@ function Login() {
                 } else {
                     Swal.fire({
                         title: "เข้าสู่ระบบไม่สำเร็จ",
-                        text: "กรุณาตรวจสอบเบอร์โทรและรหัสผ่านอีกครั้ง",
+                        text: "เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง",
                         icon: "error",
                         timer: 2000,
                     })
@@ -94,7 +94,7 @@ function Login() {
                   className="btn btn-primary btn-lg w-100 rounded-pill shadow-sm fw-bold mt-2"
                 >
                   <i className="fa fa-check me-2"></i>
-                  Sign In
+                  เข้าสู่ระบบ
                 </button>
               </div>
 

@@ -12,7 +12,7 @@ function Navbar() {
   const handleSignOut = () => {
     
     Swal.fire({
-        title: 'Sign Out',
+        title: 'ออกจากระบบ',
         text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
         icon: 'warning', // เปลี่ยนเป็น warning เพื่อให้ดูสำคัญขึ้น
         showCancelButton: true,
@@ -44,7 +44,7 @@ function Navbar() {
     })
     } catch (e) {
       Swal.fire({
-        title: 'error',
+        title: 'เกิดข้อผิดพลาด',
         text: e.message,
         icon: 'error'
       })
@@ -59,8 +59,8 @@ function Navbar() {
       if (res.data.message === "success") {
         window.dispatchEvent(new Event("pos-member-updated"));
         Swal.fire({
-          title: "เปลี่ยนข้อมูล",
-          text: "เปลี่ยนแปลงข้อมูลร้านแล้ว",
+          title: "บันทึกแล้ว",
+          text: "อัปเดตข้อมูลร้านแล้ว",
           icon: "success",
           timer: 2000,
         });
@@ -68,7 +68,7 @@ function Navbar() {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -103,7 +103,7 @@ function Navbar() {
             {/* ปุ่ม Sign Out: เพิ่ม btn-sm เพื่อให้ขนาดเท่ากันกับปุ่มข้างๆ */}
             <button onClick={handleSignOut} className="btn btn-danger btn-sm">
               <i className="fa fa-times mr-2"></i>
-              Sign Out
+              ออกจากระบบ
             </button>
           </li>
 

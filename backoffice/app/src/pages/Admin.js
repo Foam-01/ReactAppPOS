@@ -46,8 +46,8 @@ function Admin() {
   const handleSave = async () => {
     if (password !== confirmPassword) {
       Swal.fire({
-        title: "ตรวจสอบรหัสผ่าน",
-        text: "โปรดกรอกรหัสผ่านให้ตรงกัน",
+        title: "รหัสผ่านไม่ตรงกัน",
+        text: "กรอกรหัสผ่านทั้งสองช่องให้เหมือนกัน",
         icon: "error",
       });
       return;
@@ -75,7 +75,7 @@ function Admin() {
         .then((res) => {
           if (res.data.message === "success") {
             Swal.fire({
-              title: "บันทึกข้อมูลสําเร็จ",
+              title: "บันทึกแล้ว",
               icon: "success",
               showConfirmButton: false,
               timer: 1500,
@@ -108,7 +108,7 @@ function Admin() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message || "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้",
+        text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
         icon: "error",
       });
     }
@@ -122,7 +122,7 @@ function Admin() {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "ใช่, ลบข้อมูล",
+      confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -163,7 +163,7 @@ function Admin() {
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message || "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้",
+            text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
             icon: "error",
           });
         }

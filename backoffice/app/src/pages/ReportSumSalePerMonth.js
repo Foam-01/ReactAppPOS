@@ -69,7 +69,7 @@ function ReportSumsalePerMonth() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -96,7 +96,7 @@ function ReportSumsalePerMonth() {
                   className="mb-1 fw-bold text-dark"
                   style={{ letterSpacing: "0.5px" }}
                 >
-                  รายงานสรุปยอดขายตามเดือน
+                  รายได้รายเดือน
                 </h5>
                 <small className="text-muted fw-medium">
                   ตรวจสอบและเปรียบเทียบยอดขายรวมในแต่ละเดือนของปี
@@ -413,7 +413,7 @@ function ReportSumsalePerMonth() {
                     <td colSpan="5" className="text-center py-5">
                       <div className="text-muted opacity-50">
                         <i className="fa-solid fa-folder-open fa-2x mb-2 d-block"></i>
-                        ไม่มีรายการสมัครในวันนี้
+                        ไม่มีรายการสมัครในเดือนนี้
                       </div>
                     </td>
                   </tr>

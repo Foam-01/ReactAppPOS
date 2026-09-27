@@ -24,7 +24,7 @@ function User() {
             }
         } catch (e) {
             Swal.fire({
-                title: 'error',
+                title: 'เกิดข้อผิดพลาด',
                 text: e.message,
                 icon: 'error'
             })
@@ -42,8 +42,8 @@ function User() {
         // ถ้าเป็นการ "แก้ไข" จะกรอกหรือไม่กรอกก็ได้ (ถ้าไม่กรอกให้ใช้รหัสเดิมใน DB)
         if (password !== passwordConfirm) {
             Swal.fire({
-                title: 'ตรวจสอบรหัสผ่าน',
-                text: 'โปรดกรอกรหัสผ่านให้ตรงกัน',
+                title: 'รหัสผ่านไม่ตรงกัน',
+                text: 'กรอกรหัสผ่านทั้งสองช่องให้เหมือนกัน',
                 icon: 'error'
             });
             return;
@@ -76,7 +76,7 @@ function User() {
         }
     } catch (e) {
         Swal.fire({
-            title: 'error',
+            title: 'เกิดข้อผิดพลาด',
             text: e.response?.data?.message || e.message,
             icon: 'error'
         });
@@ -108,7 +108,7 @@ function User() {
             text: `คุณต้องการลบข้อมูลผู้ใช้งาน ${item.name} ใช่หรือไม่?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'ยืนยัน',
+            confirmButtonText: 'ลบ',
             cancelButtonText: 'ยกเลิก',
             confirmButtonColor: '#d33'
 
@@ -118,7 +118,7 @@ function User() {
                         if (res.data.message === 'success') {
                             Swal.fire({
                                 title: 'ลบข้อมูลแล้ว',
-                                text: 'ระบบได้ทำการลบข้อมูล เรียบร้อยแล้ว',
+                                text: 'ลบผู้ใช้แล้ว',
                                 icon: 'success',
                                 timer: 2000
                             })
@@ -132,7 +132,7 @@ function User() {
             })
         } catch (e) {
             Swal.fire({
-                title: 'error',
+                title: 'เกิดข้อผิดพลาด',
                 text: e.response?.data?.message || e.message,
                 icon: 'error'
             })
@@ -157,7 +157,7 @@ function User() {
                             className="btn btn-primary shadow-sm px-3 py-2"
                         >
                             <i className="fa fa-plus mr-2"></i>
-                            เพิ่มรายการ
+                            เพิ่มผู้ใช้
                         </button>
 
                         <div className="table-responsive mt-3">
@@ -222,11 +222,11 @@ function User() {
                     <input value={password} onChange={e => setPassword(e.target.value)} type="password" className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>ยืนยัน password</label>
+                    <label>ยืนยันรหัสผ่าน</label>
                     <input value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} type="password" className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>ระดับ</label>
+                    <label>ระดับสิทธิ์</label>
                     <select
                         value={user.level}
                         onChange={e => setUser({ ...user, level: e.target.value })}

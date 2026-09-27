@@ -42,7 +42,7 @@ function Sale() {
           }
         });
     } catch (e) {
-      Swal.fire({ title: "error", text: e.message, icon: "error" });
+      Swal.fire({ title: "เกิดข้อผิดพลาด", text: e.message, icon: "error" });
     }
   };
 
@@ -71,7 +71,7 @@ function Sale() {
         setBillSale(res.data.results);
       }
     } catch (e) {
-      Swal.fire({ title: "error", text: e.message, icon: "error" });
+      Swal.fire({ title: "เกิดข้อผิดพลาด", text: e.message, icon: "error" });
     }
   };
 
@@ -85,7 +85,7 @@ function Sale() {
         setProducts(res.data.results);
       }
     } catch (e) {
-      Swal.fire({ title: "error", text: e.message, icon: "error" });
+      Swal.fire({ title: "เกิดข้อผิดพลาด", text: e.message, icon: "error" });
     }
   };
 
@@ -100,7 +100,7 @@ function Sale() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -116,7 +116,7 @@ function Sale() {
         showCancelButton: true,
         confirmButtonColor: "#e11d48", // สีแดง Rose (โทนเดียวกับที่คุณชอบ)
         cancelButtonColor: "#64748b", // สีเทา Slate
-        confirmButtonText: "ใช่, ลบเลย!",
+        confirmButtonText: "ลบ",
         cancelButtonText: "ยกเลิก",
         reverseButtons: true, // เอาปุ่มยืนยันไว้ขวา (User มักจะถนัดแบบนี้)
       });
@@ -177,7 +177,7 @@ function Sale() {
                 toast.addEventListener("mouseleave", Swal.resumeTimer);
               },
             });
-            Toast.fire({ icon: "success", title: "ปรับปรุงจำนวนเรียบร้อย" });
+            Toast.fire({ icon: "success", title: "แก้จำนวนแล้ว" });
             // ------------------------------------------
 
             let btns = document.getElementsByClassName("btnClose");
@@ -191,7 +191,7 @@ function Sale() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -217,20 +217,20 @@ function Sale() {
       Swal.fire({
         icon: "error",
         title: "ยอดเงินไม่ถูกต้อง",
-        text: "จำนวนเงินที่รับมาน้อยกว่ายอดชำระ",
+        text: "เงินที่รับมาน้อยกว่ายอดที่ต้องชำระ",
       });
       return;
     }
 
     Swal.fire({
-      title: "จบการขาย",
-      text: "ยืนยันจบการขาย",
+      title: "จบการขาย?",
+      text: "ตรวจสอบยอดเงินแล้วกดยืนยันเพื่อออกบิล",
       icon: "question",
       showCancelButton: true,
       showConfirmButton: true,
       confirmButtonColor: "#198754",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "ยืนยัน",
+      confirmButtonText: "จบการขาย",
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -246,7 +246,7 @@ function Sale() {
                   timer: 2000,
                   timerProgressBar: true,
                 });
-                Toast.fire({ icon: "success", title: "จบการขายสำเร็จแล้ว" });
+                Toast.fire({ icon: "success", title: "บันทึกการขายแล้ว" });
 
                 // *** 3. รีเซ็ตค่าทุกอย่างให้เป็น 0 หลังจากขายเสร็จ ***
                 setCurrentBill({});
@@ -269,7 +269,7 @@ function Sale() {
             });
         } catch (e) {
           Swal.fire({
-            title: "error",
+            title: "เกิดข้อผิดพลาด",
             text: e.message,
             icon: "error",
           });
@@ -292,7 +292,7 @@ function Sale() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -313,7 +313,7 @@ function Sale() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -346,7 +346,7 @@ function Sale() {
 
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -752,7 +752,7 @@ function Sale() {
               className="text-secondary small fw-bold text-uppercase mb-2 d-block"
               style={{ letterSpacing: "1px" }}
             >
-              ยอดรวมที่ต้องชำระ (Total Due)
+              ยอดที่ต้องชำระ
             </label>
             <div
               className="display-5 mb-0 fw-bold"
@@ -769,7 +769,7 @@ function Sale() {
             {/* ส่วนกรอกเงินที่รับมา */}
             <div className="col-12">
               <label className="form-label fw-bold text-dark small text-uppercase">
-                รับเงินสด (Cash Received)
+                รับเงินสด
               </label>
               <div className="input-group input-group-lg shadow-sm">
                 <span className="input-group-text bg-white border-end-0">
@@ -793,8 +793,8 @@ function Sale() {
                 <div className="d-flex justify-content-between align-items-center">
                   <span className="fw-bold text-muted text-uppercase small">
                     {inputMoney - totalPrice >= 0
-                      ? "เงินทอน (Change)"
-                      : "ยอดค้างชำระ (Remaining)"}
+                      ? "เงินทอน"
+                      : "ยอดค้างชำระ"}
                   </span>
                   <span
                     className="h1 mb-0 fw-bold text-dark"
@@ -927,7 +927,7 @@ function Sale() {
               <tfoot className="table-light fw-bold">
                 <tr>
                   <td colSpan="4" className="text-end">
-                    รวมทั้งสิ้น (Total)
+                    รวมทั้งสิ้น
                   </td>
                   <td className="text-end pe-3 text-primary h5 mb-0 fw-bold">
                     {lastBill?.billSaleDetails
@@ -1091,7 +1091,7 @@ function Sale() {
                 >
                   <tr className="border-top border-2">
                     <td colSpan="4" className="text-end fw-bold py-3 bg-light">
-                      ยอดรวมทั้งสิ้น (Total):
+                      รวมทั้งสิ้น:
                     </td>
                     <td className="text-end pe-3 py-3 fw-bold h5 mb-0 text-primary font-monospace bg-light">
                       {selectedBill.billSaleDetails

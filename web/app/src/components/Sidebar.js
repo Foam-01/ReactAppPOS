@@ -38,7 +38,7 @@ const Sidebar = forwardRef((props, ref) => {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -58,7 +58,7 @@ const Sidebar = forwardRef((props, ref) => {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -76,7 +76,7 @@ const Sidebar = forwardRef((props, ref) => {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -125,7 +125,7 @@ const Sidebar = forwardRef((props, ref) => {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -165,7 +165,7 @@ const Sidebar = forwardRef((props, ref) => {
           err.response?.data ||
           err.message ||
           "คำขอล้มเหลว";
-        Swal.fire({ title: "error", text: String(msg), icon: "error" });
+        Swal.fire({ title: "เกิดข้อผิดพลาด", text: String(msg), icon: "error" });
       });
   };
 
@@ -385,7 +385,7 @@ const Sidebar = forwardRef((props, ref) => {
                 >
                   <i className="nav-icon fas fa-truck-loading me-2" />
                   <p className="d-inline-block m-0 fw-medium">
-                    รับสินค้าเข้า Stock
+                    รับสินค้าเข้าสต็อก
                   </p>
                 </Link>
               </li>
@@ -405,7 +405,7 @@ const Sidebar = forwardRef((props, ref) => {
 
       <Modal
         id="modalPackage"
-        title="✨ อัปเกรดแพ็กเกจของคุณ"
+        title="อัปเกรดแพ็กเกจ"
         modalSize="modal-lg"
       >
         {/* ล็อกความสูงไว้ที่ 80vh และเปิดให้ Scroll ได้ (overflow-auto) แก้ปัญหาล้นจอ */}
@@ -418,7 +418,7 @@ const Sidebar = forwardRef((props, ref) => {
               เลือกแพ็กเกจที่เหมาะกับธุรกิจคุณ
             </h4>
             <p className="text-muted small">
-              ปลดล็อกฟีเจอร์ทั้งหมด เพื่อเพิ่มยอดขายและลดเวลาการทำงาน
+              เปรียบเทียบแพ็กเกจแล้วเลือกแบบที่ใช่
             </p>
           </div>
 
@@ -449,9 +449,9 @@ const Sidebar = forwardRef((props, ref) => {
                   { text: "รายงานสรุปยอดขายรายวัน", included: true },
                   { text: "รองรับการใช้งานหลายสาขา", included: index >= 1 },
                   { text: "เพิ่มพนักงานได้ไม่จำกัด", included: index >= 1 },
-                  { text: "รายงานสถิติขั้นสูงเชิงลึก", included: index >= 2 },
+                  { text: "รายงานยอดขายแบบละเอียด", included: index >= 2 },
                   {
-                    text: "ผู้ช่วยส่วนตัว (VIP Support)",
+                    text: "ทีมซัพพอร์ตดูแลโดยตรง",
                     included: index >= 2,
                   },
                 ];
@@ -471,7 +471,7 @@ const Sidebar = forwardRef((props, ref) => {
                           className="bg-primary text-white text-center py-1 fw-bold text-uppercase tracking-widest"
                           style={{ fontSize: "0.7rem" }}
                         >
-                          ★ Most Popular
+                          ★ ยอดนิยม
                         </div>
                       )}
 
@@ -566,7 +566,7 @@ const Sidebar = forwardRef((props, ref) => {
                   role="status"
                 />
                 <div className="text-muted">
-                  กำลังดึงข้อมูลแพ็กเกจที่ดีที่สุดสำหรับคุณ...
+                  กำลังโหลดแพ็กเกจ...
                 </div>
               </div>
             )}
@@ -607,7 +607,7 @@ const Sidebar = forwardRef((props, ref) => {
               แพ็กเกจ {choosePackage?.name}
             </span>
             <div className="text-muted small fw-bold mb-1">
-              ยอดที่ต้องชำระทั้งสิ้น
+              ยอดที่ต้องชำระ
             </div>
             <h1
               className="display-4 fw-bolder mb-0 text-primary"

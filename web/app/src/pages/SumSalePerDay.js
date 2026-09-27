@@ -73,7 +73,7 @@ function SumSalePerDay() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -156,7 +156,7 @@ function SumSalePerDay() {
                 <thead className="table-light">
                   <tr className="text-muted small text-uppercase">
                     <th width="180px" className="py-3 text-center">
-                      เครื่องมือ
+                      จัดการ
                     </th>
                     <th width="150px" className="text-end py-3">
                       วันที่
@@ -215,7 +215,7 @@ function SumSalePerDay() {
             <thead className="table-light text-muted small text-uppercase fw-bold">
               <tr>
                 <th width="180px" className="text-center py-3">
-                  เครื่องมือ
+                  จัดการ
                 </th>
                 <th className="text-end py-3">เลขบิล</th>
                 <th className="py-3 ps-4">วันที่ / เวลาที่ขาย</th>

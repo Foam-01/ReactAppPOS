@@ -26,7 +26,7 @@ function Product() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -58,7 +58,7 @@ function Product() {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.response?.data?.message || e.message, // แสดง Error จริงจาก Server
         icon: "error",
       });
@@ -85,10 +85,10 @@ function Product() {
   const handleDelete = (item) => {
     Swal.fire({
       title: "ลบข้อมูล",
-      text: "ยืนยันการลบข้อมูลใช่หรือไม่?",
+      text: "ต้องการลบสินค้านี้ใช่ไหม",
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "ใช่, ลบเลย",
+      confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#d33", // สีแดงเพื่อความปลอดภัย
       cancelButtonColor: "#3085d6",
@@ -105,14 +105,14 @@ function Product() {
             fetchData();
             Swal.fire({
               title: "ลบข้อมูล",
-              text: "ลบข้อมูลออกจากระบบแล้ว",
+              text: "ลบสินค้าแล้ว",
               icon: "success",
               timer: 2000,
             });
           }
         } catch (e) {
           Swal.fire({
-            title: "error",
+            title: "เกิดข้อผิดพลาด",
             text: e.message,
             icon: "error",
           });
@@ -127,8 +127,8 @@ function Product() {
 
   const handleUplond = () => {
     Swal.fire({
-      title: "ยืนยันการอัพโหดลภาพ",
-      text: "โปรดทำการยืนยัน เพื่ออัพโหลดภาพสินค้านี้",
+      title: "อัปโหลดรูปภาพ?",
+      text: "ต้องการอัปโหลดรูปนี้ใช่ไหม",
       icon: "question",
       showCancelButton: true,
       showConfirmButton: true,
@@ -152,8 +152,8 @@ function Product() {
             .then((res) => {
               if (res.data.message === "success") {
                 Swal.fire({
-                  title: "uplond ภาพสินค้า",
-                  text: "uplond ภาพสินค้าเรียบร้อยแล้ว",
+                  title: "อัปโหลดสำเร็จ",
+                  text: "เพิ่มรูปสินค้าแล้ว",
                   icon: "success",
                   timer: 2000,
                 });
@@ -167,7 +167,7 @@ function Product() {
             });
         } catch (e) {
           Swal.fire({
-            title: "error",
+            title: "เกิดข้อผิดพลาด",
             text: e.message,
             icon: "error",
           });
@@ -192,7 +192,7 @@ function Product() {
       const errorMessage = e.response?.data?.message || e.message;
 
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: errorMessage,
         icon: "error",
       });
@@ -229,7 +229,7 @@ function Product() {
 
               Swal.fire({
                 title: "เลือกรูปภาพหลัก",
-                text: "บันทึกการเบือกภาพหลักของสินค้าแล้ว",
+                text: "ตั้งเป็นรูปหลักแล้ว",
                 icon: "success",
                 timer: 2000,
               });
@@ -240,7 +240,7 @@ function Product() {
           });
       } catch (e) {
         Swal.fire({
-          title: "error",
+          title: "เกิดข้อผิดพลาด",
           text: e.message,
           icon: "error",
         });
@@ -255,7 +255,7 @@ function Product() {
       icon: "warning", // ใช้ warning จะดูเด่นกว่าสำหรับงานลบ
       showCancelButton: true,
       confirmButtonColor: "#d33", // สีแดงให้รู้ว่าอันตราย
-      confirmButtonText: "ยืนยันการลบ",
+      confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -275,7 +275,7 @@ function Product() {
           }
         } catch (e) {
           Swal.fire({
-            title: "error",
+            title: "เกิดข้อผิดพลาด",
             text: e.response?.data?.message || e.message,
             icon: "error",
           });
@@ -302,7 +302,7 @@ function Product() {
                 data-target="#modalProduct"
                 className="btn btn-primary shadow-sm"
               >
-                <i className="fa fa-plus mr-2"></i> เพิ่มรายการ
+                <i className="fa fa-plus mr-2"></i> เพิ่มสินค้า
               </button>
             </div>
 
@@ -388,7 +388,7 @@ function Product() {
                         className="text-center p-5 text-muted bg-light"
                       >
                         <i className="fa fa-box-open fa-3x mb-3 d-block opacity-50"></i>
-                        ยังไม่มีรายการเมนูอาหารในระบบ
+                        ยังไม่มีสินค้า
                       </td>
                     </tr>
                   )}
@@ -410,7 +410,7 @@ function Product() {
                   setProduct({ ...product, barcode: e.target.value })
                 }
                 className="form-control"
-                placeholder="ยิงบาร์โค้ด..."
+                placeholder="สแกนหรือพิมพ์บาร์โค้ด"
               />
             </div>
 
@@ -547,7 +547,7 @@ function Product() {
               ""
             )}
             <small className="text-muted mt-1 d-block">
-              รองรับไฟล์ภาพ JPEG, PNG เท่านั้น
+              รองรับไฟล์ JPG และ PNG
             </small>
           </div>
 
@@ -628,7 +628,7 @@ function Product() {
           ) : (
             <div className="col-12 text-center py-5 text-muted bg-light rounded">
               <i className="fa fa-image fa-2x mb-2 d-block opacity-50"></i>
-              ยังไม่มีรูปภาพสำหรับเมนูนี้
+              ยังไม่มีรูปสินค้า
             </div>
           )}
         </div>

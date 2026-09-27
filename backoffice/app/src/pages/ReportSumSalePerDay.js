@@ -96,7 +96,7 @@ function ReportSumSalePerDay() {
                   className="mb-1 fw-bold text-dark"
                   style={{ letterSpacing: "0.5px" }}
                 >
-                  รายงานสรุปยอดขายต่อวัน
+                  ยอดขายรายวัน
                 </h5>
                 <small className="text-muted fw-medium">
                   ตรวจสอบและติดตามยอดขายของแต่ละเดือน

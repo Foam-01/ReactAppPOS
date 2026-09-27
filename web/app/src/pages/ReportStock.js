@@ -25,7 +25,7 @@ import * as dayjs from "dayjs";
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });

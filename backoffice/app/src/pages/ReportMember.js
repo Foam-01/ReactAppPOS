@@ -48,7 +48,7 @@ function ReportMember() {
               className="mb-1 fw-bold text-dark"
               style={{ letterSpacing: "0.5px" }}
             >
-              รายงานคนที่สมัครใช้บริการ
+              รายชื่อสมาชิก
             </h5>
             <small className="text-muted fw-medium">
               รายชื่อสมาชิกและข้อมูลแพ็กเกจล่าสุดในระบบ

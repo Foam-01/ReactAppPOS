@@ -39,8 +39,8 @@ function Template(props) {
 
   const handleSignOut = () => {
     Swal.fire({
-      title: "Sign Out",
-      text: "คุณต้องการออกจากระบบจัดการใช่หรือไม่?",
+      title: "ออกจากระบบ",
+      text: "ต้องการออกจากระบบใช่ไหม",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ใช่, ออกจากระบบ",
@@ -139,7 +139,7 @@ function Template(props) {
           // ดัก error รวม
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message || "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้",
+            text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
             icon: "error",
           });
         }
@@ -293,7 +293,7 @@ function Template(props) {
             className="btn btn-edit-profile w-100 d-flex align-items-center justify-content-center gap-2 py-2"
           >
             <i className="fa-solid fa-user-pen"></i>
-            <span>Edit Info</span>
+            <span>แก้ไขข้อมูลส่วนตัว</span>
           </button>
 
           <button
@@ -301,7 +301,7 @@ function Template(props) {
             onClick={handleSignOut}
           >
             <i className="fa-solid fa-right-from-bracket"></i>
-            <span>Sign Out</span>
+            <span>ออกจากระบบ</span>
           </button>
         </div>
       </div>

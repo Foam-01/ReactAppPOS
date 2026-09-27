@@ -28,7 +28,7 @@ function Stock() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -49,7 +49,7 @@ function Stock() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -90,7 +90,7 @@ function Stock() {
 
             Toast.fire({
               icon: "success",
-              title: "บันทึกเข้า Stock เรียบร้อยแล้ว",
+              title: "รับสินค้าเข้าสต็อกแล้ว",
             });
           }
         })
@@ -99,7 +99,7 @@ function Stock() {
         });
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
       });
@@ -114,7 +114,7 @@ function Stock() {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "ใช่, ลบเลย!",
+      confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -144,7 +144,7 @@ function Stock() {
             });
         } catch (e) {
           Swal.fire({
-            title: "error",
+            title: "เกิดข้อผิดพลาด",
             text: e.message,
             icon: "error",
           });
@@ -161,7 +161,7 @@ function Stock() {
           <div className="card-header bg-white py-3 border-bottom border-light">
             <div className="card-title h5 mb-0 fw-bold text-primary">
               <i className="fas fa-box-open me-2"></i>
-              รับสินค้าเข้า Stock
+              รับสินค้าเข้าสต็อก
             </div>
           </div>
 

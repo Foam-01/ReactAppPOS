@@ -22,7 +22,7 @@ function BillSales() {
       }
     } catch (e) {
       Swal.fire({
-        title: "error",
+        title: "เกิดข้อผิดพลาด",
         text: e.response?.data?.message || e.message,
         icon: "error",
       });
@@ -172,7 +172,7 @@ function BillSales() {
               {selectBill?.billSaleDetails && (
                 <tfoot className="table-light border-top border-2">
                   <tr className="fw-bold">
-                    <td colSpan="3" className="text-end py-3">รวมทั้งสิ้น (Total):</td>
+                    <td colSpan="3" className="text-end py-3">รวมทั้งสิ้น:</td>
                     <td className="text-end pe-3 py-3 h5 mb-0 text-primary font-monospace">
                       {calculateTotal(selectBill.billSaleDetails).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                     </td>

@@ -137,7 +137,7 @@ function Package() {
         </div>
       </div>
 
-      <Modal id="modalRegister" title="🚀 เริ่มต้นใช้งาน FoamPos">
+      <Modal id="modalRegister" title="สมัครใช้งาน FoamPos">
         <form onSubmit={handleRegister} className="p-2">
           <div className="mb-4 text-center">
             <div

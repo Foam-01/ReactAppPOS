@@ -34,7 +34,7 @@ const fetchData = async () => {
   } catch (e) {
     Swal.fire({
       title: "เกิดข้อผิดพลาด",
-      text: e.message || "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
+      text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
       icon: "error",
     });
   }
@@ -76,7 +76,7 @@ const fetchData = async () => {
                         className="ps-4 py-3 text-secondary fw-bold text-uppercase"
                         style={{ fontSize: "0.85rem", letterSpacing: "1px" }}
                       >
-                        ปีปฏิทิน
+                        ปี
                       </th>
                       <th
                         className="pe-4 py-3 text-end text-secondary fw-bold text-uppercase"
