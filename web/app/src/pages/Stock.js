@@ -1,9 +1,10 @@
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import * as dayjs from "dayjs";
 
 function Stock() {
@@ -112,9 +113,8 @@ function Stock() {
       text: "คุณต้องการลบรายการสต็อกนี้ใช่หรือไม่?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
       confirmButtonText: "ลบ",
+      confirmButtonColor: DANGER_COLOR,
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -160,7 +160,7 @@ function Stock() {
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-header bg-white py-3 border-bottom border-light">
             <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fas fa-box-open me-2"></i>
+              <i className="fa-solid fa-box-open me-2"></i>
               รับสินค้าเข้าสต็อก
             </div>
           </div>
@@ -174,7 +174,7 @@ function Stock() {
                 </label>
                 <div className="input-group shadow-sm">
                   <span className="input-group-text bg-light text-muted">
-                    <i className="fa fa-tag"></i>
+                    <i className="fa-solid fa-tag"></i>
                   </span>
                   <input
                     disabled
@@ -188,7 +188,7 @@ function Stock() {
                     data-target="#modalProduct"
                     className="btn btn-primary px-3"
                   >
-                    <i className="fa fa-search"></i>
+                    <i className="fa-solid fa-search"></i>
                   </button>
                 </div>
               </div>
@@ -214,7 +214,7 @@ function Stock() {
                   onClick={handleSave}
                   className="btn btn-primary px-4 py-2 shadow-sm fw-bold rounded-3"
                 >
-                  <i className="fa fa-check me-2"></i>
+                  <i className="fa-solid fa-check me-2"></i>
                   บันทึกรายการ
                 </button>
               </div>
@@ -223,7 +223,7 @@ function Stock() {
             {/* ตารางรายการสต็อก ปรับให้ดูอ่านง่ายสไตล์ Dashboard */}
             <div className="table-responsive rounded-3 border">
               <table className="table table-hover align-middle mb-0">
-                <thead className="table-light">
+                <thead className="table-light text-muted small fw-bold">
                   <tr className="small text-muted text-uppercase fw-bold">
                     <th className="py-3 ps-3">Barcode</th>
                     <th className="py-3">รายการสินค้า</th>
@@ -255,7 +255,7 @@ function Stock() {
                             onClick={(e) => handleDelete(item)}
                             className="btn btn-outline-danger btn-sm rounded-pill px-3"
                           >
-                            <i className="fa fa-trash-alt me-1"></i>
+                            <i className="fa-solid fa-trash-alt me-1"></i>
                             ลบ
                           </button>
                         </td>
@@ -263,13 +263,9 @@ function Stock() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="5"
-                        className="text-center py-5 text-muted small"
-                      >
-                        <i className="fa fa-folder-open fa-2x d-block mb-2 opacity-25"></i>
-                        ยังไม่มีข้อมูลการรับเข้าสต็อก
-                      </td>
+                      <td colSpan="5">
+<EmptyState icon="fa-folder-open" text="ยังไม่มีข้อมูลการรับเข้าสต็อก" />
+</td>
                     </tr>
                   )}
                 </tbody>
@@ -280,8 +276,8 @@ function Stock() {
       </Template>
 
       <Modal id="modalProduct" title="เลือกสินค้า" modalSize="modal-lg">
-        <table className="table table-bordered table-striped">
-          <thead>
+        <table className="table table-hover align-middle mb-0">
+          <thead className="table-light text-muted small fw-bold">
             <tr>
               <th width="180px"></th>
               <th width="150px">barcode</th>
@@ -297,7 +293,7 @@ function Stock() {
                         onClick={(e) => handleChooseProduct(item)}
                         className="btn btn-primary"
                       >
-                        <i className="fa fa-check me-2"></i>
+                        <i className="fa-solid fa-check me-2"></i>
                         เลือกรายการ
                       </button>
                     </td>

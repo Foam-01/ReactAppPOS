@@ -1,9 +1,10 @@
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import * as dayjs from "dayjs";
 
 function SumSalePerDay() {
@@ -87,7 +88,7 @@ function SumSalePerDay() {
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-header bg-white py-3 border-0">
             <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fas fa-chart-line me-2"></i>
+              <i className="fa-solid fa-chart-line me-2"></i>
               รายงานสรุปยอดขายรายวัน
             </div>
           </div>
@@ -101,7 +102,7 @@ function SumSalePerDay() {
                 </label>
                 <div className="input-group shadow-sm rounded">
                   <span className="input-group-text bg-light border-end-0">
-                    <i className="fa fa-calendar text-primary"></i>
+                    <i className="fa-solid fa-calendar text-primary"></i>
                   </span>
                   <select
                     onChange={(e) => setCurrentYear(e.target.value)}
@@ -123,7 +124,7 @@ function SumSalePerDay() {
                 </label>
                 <div className="input-group shadow-sm rounded">
                   <span className="input-group-text bg-light border-end-0">
-                    <i className="fa fa-calendar-check text-primary"></i>
+                    <i className="fa-solid fa-calendar-check text-primary"></i>
                   </span>
                   <select
                     onChange={(e) => setCurrentMonth(e.target.value)}
@@ -144,7 +145,7 @@ function SumSalePerDay() {
                   onClick={handleShowReport}
                   className="btn btn-primary px-4 py-2 shadow-sm fw-bold rounded-3 w-100 w-md-auto"
                 >
-                  <i className="fa fa-search me-2"></i>
+                  <i className="fa-solid fa-search me-2"></i>
                   แสดงรายงานยอดขาย
                 </button>
               </div>
@@ -153,7 +154,7 @@ function SumSalePerDay() {
             {/* ตารางแสดงข้อมูล ปรับให้ดู Clean และอ่านง่ายขึ้น */}
             <div className="table-responsive rounded-3 border">
               <table className="table table-hover align-middle mb-0">
-                <thead className="table-light">
+                <thead className="table-light text-muted small fw-bold">
                   <tr className="text-muted small text-uppercase">
                     <th width="180px" className="py-3 text-center">
                       จัดการ
@@ -173,9 +174,9 @@ function SumSalePerDay() {
                             data-toggle="modal"
                             data-target="#modalBillSale"
                             onClick={(e) => setCurrentBillSale(item.results)}
-                            className="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm"
+                            className="btn btn-outline-primary btn-sm rounded-pill px-3"
                           >
-                            <i className="fa fa-file-alt me-2"></i>
+                            <i className="fa-solid fa-file-alt me-2"></i>
                             รายละเอียด
                           </button>
                         </td>
@@ -191,10 +192,9 @@ function SumSalePerDay() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="3" className="text-center py-5 text-muted">
-                        <i className="fa fa-info-circle fa-2x mb-2 d-block opacity-25"></i>
-                        ไม่พบข้อมูลยอดขายในช่วงเวลาที่เลือก
-                      </td>
+                      <td colSpan="3">
+<EmptyState icon="fa-info-circle" text="ไม่พบข้อมูลยอดขายในช่วงเวลาที่เลือก" />
+</td>
                     </tr>
                   )}
                 </tbody>
@@ -212,7 +212,7 @@ function SumSalePerDay() {
         <div className="table-responsive rounded-3 border shadow-sm bg-white overflow-hidden">
           <table className="table table-hover align-middle mb-0">
             {/* ปรับส่วนหัวให้ดู Clean และแบ่งคอลัมน์ให้ถูกต้อง */}
-            <thead className="table-light text-muted small text-uppercase fw-bold">
+            <thead className="table-light text-muted small fw-bold">
               <tr>
                 <th width="180px" className="text-center py-3">
                   จัดการ
@@ -236,7 +236,7 @@ function SumSalePerDay() {
                         }
                         className="btn btn-primary btn-sm rounded-pill px-3 shadow-sm"
                       >
-                        <i className="fa fa-file-alt me-2 small"></i>
+                        <i className="fa-solid fa-file-alt me-2 small"></i>
                         รายละเอียด
                       </button>
                     </td>
@@ -246,7 +246,7 @@ function SumSalePerDay() {
                         {dayjs(item.createdAt).format("DD/MM/YYYY")}
                       </div>
                       <div className="small text-muted opacity-75">
-                        <i className="far fa-clock me-1"></i>
+                        <i className="fa-regular fa-clock me-1"></i>
                         {dayjs(item.createdAt).format("HH:mm")} น.
                       </div>
                     </td>
@@ -254,10 +254,9 @@ function SumSalePerDay() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="text-center py-5 text-muted">
-                    <i className="fa fa-receipt fa-3x mb-3 d-block opacity-25"></i>
-                    ไม่พบข้อมูลบิลขาย
-                  </td>
+                  <td colSpan="3">
+<EmptyState icon="fa-receipt" text="ไม่พบข้อมูลบิลขาย" />
+</td>
                 </tr>
               )}
             </tbody>
@@ -273,7 +272,7 @@ function SumSalePerDay() {
         <div className="table-responsive rounded-3 border shadow-sm overflow-hidden">
           <table className="table table-hover align-middle mb-0">
             {/* ส่วนหัวตารางปรับให้ดู Clean */}
-            <thead className="table-light text-muted small text-uppercase fw-bold">
+            <thead className="table-light text-muted small fw-bold">
               <tr>
                 <th className="py-3 ps-3 border-0">รายการ</th>
                 <th className="text-end py-3 border-0">ราคา</th>
@@ -292,7 +291,7 @@ function SumSalePerDay() {
                       {parseInt(item.price).toLocaleString("th-TH")}
                     </td>
                     <td className="text-end font-monospace">
-                      <span className="badge bg-light text-dark border fw-normal px-2">
+                      <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                         {item.qty}
                       </span>
                     </td>
@@ -303,9 +302,9 @@ function SumSalePerDay() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-4 text-muted small">
-                    ไม่พบรายการสินค้า
-                  </td>
+                  <td colSpan="4">
+<EmptyState text="ไม่พบรายการสินค้า" />
+</td>
                 </tr>
               )}
             </tbody>

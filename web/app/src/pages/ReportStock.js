@@ -1,9 +1,10 @@
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import * as dayjs from "dayjs";
 
  function ReportStock() {
@@ -39,7 +40,7 @@ import * as dayjs from "dayjs";
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-header bg-white py-3 border-bottom border-light">
             <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fas fa-boxes me-2"></i>
+              <i className="fa-solid fa-boxes me-2"></i>
               รายงานตรวจสอบสต็อกสินค้าคงเหลือ
             </div>
           </div>
@@ -49,7 +50,7 @@ import * as dayjs from "dayjs";
             {/* ปรับ Padding เป็น 0 เพื่อให้ตารางชิดขอบดู Clean */}
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
-                <thead className="table-light text-muted small text-uppercase">
+                <thead className="table-light text-muted small fw-bold">
                   <tr>
                     <th className="py-3 ps-4">Barcode</th>
                     <th className="py-3">รายการสินค้า</th>
@@ -95,7 +96,7 @@ import * as dayjs from "dayjs";
                                 ? "bg-primary-subtle text-primary"
                                 : "bg-danger-subtle text-danger"
                             }`}
-                            style={{ fontSize: "0.9rem" }}
+                            style={{ fontSize: "0.85rem" }}
                           >
                             {(item.stockIn - item.stockOut).toLocaleString()}
                           </span>
@@ -104,10 +105,9 @@ import * as dayjs from "dayjs";
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="text-center py-5 text-muted">
-                        <i className="fa fa-box-open fa-3x mb-3 d-block opacity-25"></i>
-                        ไม่พบข้อมูลสต็อกสินค้า
-                      </td>
+                      <td colSpan="5">
+<EmptyState icon="fa-box-open" text="ไม่พบข้อมูลสต็อกสินค้า" />
+</td>
                     </tr>
                   )}
                 </tbody>
@@ -129,7 +129,7 @@ import * as dayjs from "dayjs";
         >
           <table className="table table-hover align-middle mb-0">
             {/* เพิ่ม sticky-top เพื่อให้หัวตารางค้างไว้ด้านบนเสมอ */}
-            <thead className="table-light text-muted small text-uppercase fw-bold sticky-top">
+            <thead className="table-light text-muted small fw-bold sticky-top">
               <tr>
                 <th className="py-3 ps-3 border-0">Barcode</th>
                 <th className="py-3 border-0">รายการสินค้า</th>
@@ -155,7 +155,7 @@ import * as dayjs from "dayjs";
                         {dayjs(item.createdAt).format("DD/MM/YYYY")}
                       </div>
                       <div className="small text-muted opacity-75">
-                        <i className="far fa-clock me-1"></i>
+                        <i className="fa-regular fa-clock me-1"></i>
                         {dayjs(item.createdAt).format("HH:mm")} น.
                       </div>
                     </td>
@@ -163,9 +163,9 @@ import * as dayjs from "dayjs";
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-5 text-muted small">
-                    ไม่พบข้อมูลการรับเข้าสต็อก
-                  </td>
+                  <td colSpan="4">
+<EmptyState text="ไม่พบข้อมูลการรับเข้าสต็อก" />
+</td>
                 </tr>
               )}
             </tbody>
@@ -185,7 +185,7 @@ import * as dayjs from "dayjs";
         >
           <table className="table table-hover align-middle mb-0">
             {/* ส่วนหัวตาราง (ทำให้ติดอยู่กับที่เวลาเลื่อน - Sticky Header) */}
-            <thead className="table-light sticky-top">
+            <thead className="table-light text-muted small fw-bold sticky-top">
               <tr className="small text-uppercase fw-bold text-muted">
                 <th className="py-3 ps-3 border-0">Barcode</th>
                 <th className="py-3 border-0">รายการสินค้า</th>
@@ -211,7 +211,7 @@ import * as dayjs from "dayjs";
                         {dayjs(item.createdAt).format("DD/MM/YYYY")}
                       </div>
                       <div className="small text-muted opacity-75">
-                        <i className="far fa-clock me-1"></i>
+                        <i className="fa-regular fa-clock me-1"></i>
                         {dayjs(item.createdAt).format("HH:mm")} น.
                       </div>
                     </td>
@@ -219,9 +219,9 @@ import * as dayjs from "dayjs";
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-5 text-muted small">
-                    ไม่พบประวัติการขาย
-                  </td>
+                  <td colSpan="4">
+<EmptyState text="ไม่พบประวัติการขาย" />
+</td>
                 </tr>
               )}
             </tbody>

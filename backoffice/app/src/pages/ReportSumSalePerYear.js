@@ -1,7 +1,7 @@
 import Template from "./Template";
 import axios from "axios";
 import config from "../config";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import { useState, useEffect } from "react";
 import Modal from "../components/Modal";
 import * as dayjs from "dayjs";
@@ -121,7 +121,7 @@ const fetchData = async () => {
                               data-bs-toggle="modal"
                               data-bs-target="#modalInfo"
                               onClick={(e) => setSelectedResult(item)}
-                              className="btn btn-info btn-sm px-3 rounded-pill text-white fw-bold shadow-sm btn-detail"
+                              className="btn btn-outline-primary btn-sm px-3 rounded-pill fw-bold btn-detail"
                             >
                               <i className="fa-solid fa-list-ul me-2"></i>
                               ดูรายการ
@@ -153,39 +153,6 @@ const fetchData = async () => {
           </div>
         </div>
 
-        <style>{`
-          /* เงาของการ์ด */
-          .shadow-custom {
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
-          }
-
-          /* ตกแต่งตาราง */
-          .custom-table td {
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-          }
-
-          /* Hover Effect ของแถวตาราง */
-          .custom-table tbody tr {
-            transition: all 0.25s ease;
-          }
-          .custom-table tbody tr:hover {
-            background-color: #fcfdfe;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            position: relative;
-            z-index: 1;
-          }
-
-          /* ปุ่มดูรายละเอียด */
-          .btn-detail {
-            transition: all 0.2s ease;
-          }
-          .btn-detail:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13, 202, 240, 0.4) !important;
-          }
-        `}</style>
       </Template>
 
       {/* 🌟 Modal แสดงรายละเอียด */}
@@ -280,11 +247,11 @@ const fetchData = async () => {
                       </td>
                       <td className="py-3">
                         {item.package?.name ? (
-                          <span className="badge bg-info-subtle text-info px-3 py-2 rounded-pill shadow-sm border border-info-subtle">
+                          <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                             {item.package.name}
                           </span>
                         ) : (
-                          <span className="badge bg-light text-secondary px-3 py-2 rounded-pill border">
+                          <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                             ไม่ระบุ
                           </span>
                         )}

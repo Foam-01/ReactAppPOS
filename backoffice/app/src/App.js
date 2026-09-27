@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import Swal from "./utils/swal";
 import config from "./config";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +32,7 @@ function App() {
           title: "เข้าสู่ระบบไม่สำเร็จ",
           text: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้ง",
           icon: "error",
-          timer: 3000,
+          timer: 2000,
         });
       }
     } catch (e) {
@@ -47,7 +47,7 @@ function App() {
         title: "เข้าสู่ระบบไม่สำเร็จ",
         text: errorMessage,
         icon: "error",
-        timer: 3000,
+        timer: 2000,
       });
     }
   };
@@ -69,7 +69,7 @@ function App() {
             </h3>
             <div
               className="text-muted small fw-bold text-uppercase"
-              style={{ letterSpacing: "2px", fontSize: "0.7rem" }}
+              style={{ letterSpacing: "2px", fontSize: "0.75rem" }}
             >
               Management System
             </div>
@@ -83,13 +83,13 @@ function App() {
               </label>
               <div className="input-group shadow-sm">
                 <span className="input-group-text bg-white border-end-0 text-muted px-3">
-                  <i className="fa fa-user"></i>
+                  <i className="fa-solid fa-user"></i>
                 </span>
                 <input
                   onChange={(e) => setUsr(e.target.value)}
                   className="form-control border-start-0 ps-0 py-2"
                   placeholder="ระบุชื่อผู้ใช้งาน"
-                  style={{ fontSize: "0.9rem" }}
+                  style={{ fontSize: "0.85rem" }}
                 />
               </div>
             </div>
@@ -101,14 +101,14 @@ function App() {
               </label>
               <div className="input-group shadow-sm">
                 <span className="input-group-text bg-white border-end-0 text-muted px-3">
-                  <i className="fa fa-key"></i>
+                  <i className="fa-solid fa-key"></i>
                 </span>
                 <input
                   onChange={(e) => setPwd(e.target.value)}
                   className="form-control border-start-0 ps-0 py-2"
                   type="password"
                   placeholder="ระบุรหัสผ่าน"
-                  style={{ fontSize: "0.9rem" }}
+                  style={{ fontSize: "0.85rem" }}
                 />
               </div>
             </div>
@@ -129,7 +129,7 @@ function App() {
           <div className="text-center mt-5">
             <small
               className="text-muted opacity-75"
-              style={{ fontSize: "0.7rem" }}
+              style={{ fontSize: "0.75rem" }}
             >
               © 2026 POS SYSTEM • ALL RIGHTS RESERVED
             </small>

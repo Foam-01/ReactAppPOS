@@ -1,4 +1,4 @@
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import Template from "./Template";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -131,7 +131,7 @@ function ReportChangePackage() {
                   className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
                   style={{ width: "50px", height: "50px" }}
                 >
-                  <i className="fas fa-exchange-alt fs-5"></i>
+                  <i className="fa-solid fa-exchange-alt fs-5"></i>
                 </div>
                 <div>
                   <h5
@@ -231,7 +231,7 @@ function ReportChangePackage() {
 
                           {/* แพ็กเกจที่ต้องการ */}
                           <td className="text-center py-3">
-                            <span className="badge bg-gradient-info px-4 py-2 rounded-pill shadow-sm fs-6">
+                            <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                               <i className="fa-solid fa-box-open me-2 text-white opacity-75"></i>
                               {item.package?.name || "ไม่พบข้อมูลแพ็กเกจ"}
                             </span>
@@ -296,51 +296,6 @@ function ReportChangePackage() {
           </div>
         </div>
 
-        <style>{`
-        /* เงาของการ์ด */
-        .shadow-custom {
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
-        }
-
-        /* ตกแต่งตาราง */
-        .custom-table td {
-          border-bottom: 1px solid #f1f5f9;
-          vertical-align: middle;
-        }
-
-        /* Hover Effect ของแถว */
-        .custom-table tbody tr {
-          transition: all 0.25s ease;
-        }
-        .custom-table tbody tr:hover {
-          background-color: #fcfdfe;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ป้ายแพ็กเกจไล่สี (Gradient Info) */
-        .bg-gradient-info {
-          background: linear-gradient(135deg, #0dcaf0 0%, #0bacce 100%);
-          color: white;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          border: none;
-        }
-
-        /* ปุ่มอนุมัติ (Approve Button) */
-        .btn-approve {
-          transition: all 0.2s ease;
-        }
-        .btn-approve:hover {
-          transform: scale(1.05);
-          box-shadow: 0 5px 15px rgba(25, 135, 84, 0.3) !important;
-        }
-        .btn-approve:active {
-          transform: scale(0.95);
-        }
-      `}</style>
       </Template>
 
       <Modal id="modalPay" title="อนุมัติการชำระเงิน" modalSize="modal-md">
@@ -443,7 +398,7 @@ function ReportChangePackage() {
         <style>{`
           /* สไตล์ช่องกรอกข้อมูลแบบมินิมอล */
           .minimal-input {
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 0.6rem 1rem;
             font-size: 0.95rem;
@@ -459,7 +414,7 @@ function ReportChangePackage() {
           /* สไตล์ปุ่มยืนยัน (สีดำด้าน) */
           .minimal-btn {
             border-radius: 8px;
-            background-color: #1e293b;
+            background-color: var(--color-text);
             border: none;
             letter-spacing: 0.5px;
             transition: background-color 0.2s ease, transform 0.1s ease;
@@ -471,14 +426,14 @@ function ReportChangePackage() {
           /* สไตล์ปุ่มยกเลิก (สีเทาอ่อน) */
           .minimal-cancel-btn {
             border-radius: 8px;
-            background-color: #f1f5f9;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
+            background-color: var(--color-row-hover);
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
             letter-spacing: 0.5px;
             transition: all 0.2s ease;
           }
 
-          .minimal-cancel-btn:hover { background-color: #e2e8f0; color: #475569; }
+          .minimal-cancel-btn:hover { background-color: var(--color-border); color: #475569; }
           .minimal-cancel-btn:active { transform: scale(0.98); }
 
           /* แต่งปฏิทิน */

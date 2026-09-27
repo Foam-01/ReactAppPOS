@@ -1,9 +1,10 @@
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import * as dayjs from "dayjs";
 
 function BillSales() {
@@ -44,7 +45,7 @@ function BillSales() {
           <div className="card-header border-0 py-4 px-4 d-flex justify-content-between align-items-center bg-white">
             <div>
               <h5 className="mb-1 fw-bold text-dark">
-                <i className="fas fa-file-invoice-dollar text-primary me-2"></i>
+                <i className="fa-solid fa-file-invoice-dollar text-primary me-2"></i>
                 รายงานบิลขาย
               </h5>
               <p className="text-muted small mb-0">ตรวจสอบประวัติและรายละเอียดการขายทั้งหมดของระบบ</p>
@@ -57,7 +58,7 @@ function BillSales() {
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
-                <thead className="bg-dark text-white">
+                <thead className="table-light text-muted small fw-bold">
                   <tr className="small text-uppercase fw-bold" style={{ letterSpacing: "1px" }}>
                     <th className="py-3 ps-4 border-0">เครื่องมือ</th>
                     <th className="py-3 border-0">หมายเลขบิล</th>
@@ -77,18 +78,18 @@ function BillSales() {
                             onClick={() => setSelectBill(item)}
                             className="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0"
                             style={{ 
-                                fontSize: "13px", 
+                                fontSize: "0.85rem", 
                                 fontWeight: "500",
-                                background: "linear-gradient(45deg, #0d6efd, #0a58ca)" 
+                                background: "linear-gradient(45deg, var(--color-primary), #0a58ca)" 
                             }}
                           >
-                            <i className="fas fa-file-alt me-2"></i>ดูรายละเอียด
+                            <i className="fa-solid fa-file-alt me-2"></i>ดูรายละเอียด
                           </button>
                         </td>
 
                         {/* หมายเลขบิล: ใช้ Badge สีอ่อนให้ดูสะอาด */}
                         <td className="py-3">
-                          <span className="badge bg-light text-primary border px-2 py-1 fw-bold font-monospace">
+                          <span className="badge bg-light text-dark border fw-normal px-2 py-1 font-monospace">
                             #{item.id}
                           </span>
                         </td>
@@ -98,10 +99,10 @@ function BillSales() {
                           <div className="d-flex align-items-center">
                             <div className="mr-3 bg-light text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" 
                                  style={{ width: "38px", height: "38px", minWidth: "38px" }}>
-                              <i className="far fa-calendar-alt " style={{ fontSize: "14px" }}></i>
+                              <i className="fa-regular fa-calendar-alt " style={{ fontSize: "14px" }}></i>
                             </div>
                             <div>
-                              <div className="fw-bold text-dark mb-0" style={{ fontSize: "0.9rem" }}>
+                              <div className="fw-bold text-dark mb-0" style={{ fontSize: "0.85rem" }}>
                                 {dayjs(item.createdAt).format("DD MMM YYYY")}
                               </div>
                               <div className="text-muted small font-monospace" style={{ fontSize: "0.75rem" }}>
@@ -116,14 +117,14 @@ function BillSales() {
                           {calculateTotal(item.billSaleDetails).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                           })}
-                          <span className="text-muted small ms-1" style={{ fontSize: '0.8rem' }}>฿</span>
+                          <span className="text-muted small ms-1" style={{ fontSize: '0.85rem' }}>฿</span>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="text-center py-5">
-                        <EmptyState />
+                      <td colSpan="4">
+                        <EmptyState icon="fa-receipt" text="ไม่พบข้อมูลบิลขายในระบบ" />
                       </td>
                     </tr>
                   )}
@@ -143,7 +144,7 @@ function BillSales() {
         <div className="p-3">
           <div className="table-responsive border rounded-3 overflow-hidden shadow-sm">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light text-muted small text-uppercase fw-bold">
+              <thead className="table-light text-muted small fw-bold">
                 <tr>
                   <th className="py-3 ps-3 border-0">รายการสินค้า</th>
                   <th className="py-3 border-0 text-end">ราคา</th>
@@ -159,7 +160,7 @@ function BillSales() {
                       {item.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                     </td>
                     <td className="text-center">
-                      <span className="badge bg-light text-dark border fw-normal px-3 py-2 font-monospace">
+                      <span className="badge bg-light text-dark border fw-normal px-2 py-1 font-monospace">
                         {item.qty}
                       </span>
                     </td>
@@ -188,16 +189,4 @@ function BillSales() {
 }
 
 // Component สำหรับแสดงผลเมื่อไม่มีข้อมูล
-const EmptyState = () => (
-  <div className="py-5 text-center">
-    <img
-      src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png"
-      alt="empty"
-      style={{ width: "80px", opacity: "0.3" }}
-      className="mb-3"
-    />
-    <h6 className="text-muted fw-light">ไม่พบข้อมูลบิลขายในระบบ</h6>
-  </div>
-);
-
 export default BillSales;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Template from "./Template";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 
@@ -27,7 +27,7 @@ function ReportMember() {
         title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
-        timer: 3000,
+        timer: 2000,
       });
     }
   };
@@ -119,12 +119,12 @@ function ReportMember() {
                       </td>
                       <td className="pe-4 py-3 text-end">
                         {item.package?.name ? (
-                          <span className="badge bg-gradient-primary px-3 py-2 rounded-pill shadow-sm">
+                          <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                             <i className="fa-solid fa-crown me-1 text-warning"></i>{" "}
                             {item.package.name}
                           </span>
                         ) : (
-                          <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill">
+                          <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                             ไม่มีแพ็กเกจ
                           </span>
                         )}
@@ -157,38 +157,6 @@ function ReportMember() {
         </div>
       </div>
 
-      <style>{`
-        /* เงาของการ์ดให้ดูมีมิติ ฟุ้งๆ สไตล์แอปยุคใหม่ */
-        .shadow-custom {
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
-        }
-
-        /* ตกแต่งแถวตารางให้ดูสะอาดตา */
-        .custom-table td {
-          border-bottom: 1px solid #f1f5f9;
-        }
-
-        /* เอฟเฟกต์ตอนเอาเมาส์ชี้ แถวจะลอยขึ้นมานิดนึงและเปลี่ยนสีพื้นหลัง */
-        .custom-table tbody tr {
-          transition: all 0.3s ease;
-        }
-        .custom-table tbody tr:hover {
-          background-color: #f8faff;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ป้ายแพ็กเกจแบบไล่สี (Gradient) ให้ดูพรีเมียม */
-        .bg-gradient-primary {
-          background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-          color: white;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          border: none;
-        }
-      `}</style>
     </Template>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
+import Loading from "./Loading";
 import axios from "axios";
 import config from "../config";
 import { Link } from "react-router-dom";
@@ -99,7 +100,7 @@ const Sidebar = forwardRef((props, ref) => {
       >
         {isCurrentPackage ? (
           <span>
-            <i className="fa fa-check me-1"></i> แพ็กเกจปัจจุบัน
+            <i className="fa-solid fa-check me-1"></i> แพ็กเกจปัจจุบัน
           </span>
         ) : (
           `เลือกใช้งาน ${item.name}`
@@ -144,7 +145,7 @@ const Sidebar = forwardRef((props, ref) => {
             toast: true,
             position: "top-end",
             showConfirmButton: false,
-            timer: 4000,
+            timer: 2000,
             timerProgressBar: true,
             didOpen: (toast) => {
               toast.addEventListener("mouseenter", Swal.stopTimer);
@@ -228,9 +229,9 @@ const Sidebar = forwardRef((props, ref) => {
               <div className="d-flex align-items-center mt-1">
                 <span
                   className="badge bg-warning text-dark fw-bold rounded-pill shadow-sm"
-                  style={{ fontSize: "0.65rem", padding: "3px 8px" }}
+                  style={{ fontSize: "0.75rem", padding: "3px 8px" }}
                 >
-                  <i className="fa fa-crown me-1" /> {packageName}
+                  <i className="fa-solid fa-crown me-1" /> {packageName}
                 </span>
               </div>
               <div className="mt-2">
@@ -241,14 +242,14 @@ const Sidebar = forwardRef((props, ref) => {
                   data-target="#modalPackage"
                   className="btn btn-warning btn-xs w-100 fw-bold rounded-pill shadow-sm"
                   style={{
-                    fontSize: "0.7rem",
+                    fontSize: "0.75rem",
                     padding: "4px 10px",
                     background:
                       "linear-gradient(90deg, #ffc107 0%, #ffdb6e 100%)",
                     border: "none",
                   }}
                 >
-                  <i className="fa fa-arrow-up me-1" /> UPGRADE
+                  <i className="fa-solid fa-arrow-up me-1" /> UPGRADE
                 </button>
               </div>
             </div>
@@ -266,14 +267,14 @@ const Sidebar = forwardRef((props, ref) => {
               <div className="d-flex justify-content-between align-items-end mb-2">
                 <div
                   className="text-white-50 small fw-bold text-uppercase"
-                  style={{ letterSpacing: "0.5px", fontSize: "0.7rem" }}
+                  style={{ letterSpacing: "0.5px", fontSize: "0.75rem" }}
                 >
-                  <i className="fas fa-chart-pie me-1 text-warning" /> Bill
+                  <i className="fa-solid fa-chart-pie me-1 text-warning" /> Bill
                   Limit
                 </div>
                 <div
                   className="text-white fw-bold"
-                  style={{ fontSize: "0.9rem" }}
+                  style={{ fontSize: "0.85rem" }}
                 >
                   {totalBill || 0}{" "}
                   <span
@@ -306,9 +307,9 @@ const Sidebar = forwardRef((props, ref) => {
               {percent >= 80 && (
                 <div
                   className="mt-2 text-center text-danger fw-bold"
-                  style={{ fontSize: "0.65rem" }}
+                  style={{ fontSize: "0.75rem" }}
                 >
-                  <i className="fas fa-exclamation-triangle me-1" />
+                  <i className="fa-solid fa-exclamation-triangle me-1" />
                   ใกล้ครบกำหนด {(billAmount || 0).toLocaleString("th-TH")}{" "}
                   บิลแล้ว
                 </div>
@@ -327,7 +328,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/home"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-th-large me-2" />
+                  <i className="nav-icon fa-solid fa-th-large me-2" />
                   <p className="d-inline-block m-0 fw-medium">หน้าหลัก</p>
                 </Link>
               </li>
@@ -336,7 +337,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/sale"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-cash-register me-2" />
+                  <i className="nav-icon fa-solid fa-cash-register me-2" />
                   <p className="d-inline-block m-0 fw-medium">ขายสินค้า</p>
                 </Link>
               </li>
@@ -345,7 +346,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/product"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-box-open me-2" />
+                  <i className="nav-icon fa-solid fa-box-open me-2" />
                   <p className="d-inline-block m-0 fw-medium">สินค้า</p>
                 </Link>
               </li>
@@ -354,7 +355,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/user"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-user-shield me-2" />
+                  <i className="nav-icon fa-solid fa-user-shield me-2" />
                   <p className="d-inline-block m-0 fw-medium">ผู้ใช้งานระบบ</p>
                 </Link>
               </li>
@@ -363,7 +364,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/sumSalePerDay"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-chart-line me-2" />
+                  <i className="nav-icon fa-solid fa-chart-line me-2" />
                   <p className="d-inline-block m-0 fw-medium">
                     สรุปยอดขายรายวัน
                   </p>
@@ -374,7 +375,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/billSales"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-file-invoice-dollar me-2" />
+                  <i className="nav-icon fa-solid fa-file-invoice-dollar me-2" />
                   <p className="d-inline-block m-0 fw-medium">รายงานบิลขาย</p>
                 </Link>
               </li>
@@ -383,7 +384,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/stock"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-truck-loading me-2" />
+                  <i className="nav-icon fa-solid fa-truck-loading me-2" />
                   <p className="d-inline-block m-0 fw-medium">
                     รับสินค้าเข้าสต็อก
                   </p>
@@ -394,7 +395,7 @@ const Sidebar = forwardRef((props, ref) => {
                   to="/ReportStock"
                   className="nav-link rounded-3 px-3 py-2 transition-all"
                 >
-                  <i className="nav-icon fas fa-clipboard-list me-2" />
+                  <i className="nav-icon fa-solid fa-clipboard-list me-2" />
                   <p className="d-inline-block m-0 fw-medium">รายงาน Stock</p>
                 </Link>
               </li>
@@ -469,7 +470,7 @@ const Sidebar = forwardRef((props, ref) => {
                       {isPopular && (
                         <div
                           className="bg-primary text-white text-center py-1 fw-bold text-uppercase tracking-widest"
-                          style={{ fontSize: "0.7rem" }}
+                          style={{ fontSize: "0.75rem" }}
                         >
                           ★ ยอดนิยม
                         </div>
@@ -560,14 +561,8 @@ const Sidebar = forwardRef((props, ref) => {
                 );
               })
             ) : (
-              <div className="text-center p-5 w-100">
-                <div
-                  className="spinner-border text-primary mb-3"
-                  role="status"
-                />
-                <div className="text-muted">
-                  กำลังโหลดแพ็กเกจ...
-                </div>
+              <div className="w-100">
+                <Loading text="กำลังโหลดแพ็กเกจ..." />
               </div>
             )}
           </div>
@@ -589,7 +584,7 @@ const Sidebar = forwardRef((props, ref) => {
           /* ตกแต่ง Scrollbar ให้ดูคลีน */
           .custom-scrollbar::-webkit-scrollbar { width: 6px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--color-border-strong); border-radius: 10px; }
         `}</style>
       </Modal>
 
@@ -638,7 +633,7 @@ const Sidebar = forwardRef((props, ref) => {
                   item.bankName ||
                   ""
                 ).toLowerCase();
-                let bankBg = "#64748b";
+                let bankBg = "var(--color-text-muted)";
                 let bankText = "BANK";
                 let textColor = "#fff";
 
@@ -667,7 +662,7 @@ const Sidebar = forwardRef((props, ref) => {
                   <div
                     className="mb-3 rounded-4 border bank-card position-relative overflow-hidden"
                     key={index}
-                    style={{ borderColor: "#e2e8f0" }}
+                    style={{ borderColor: "var(--color-border)" }}
                   >
                     {/* แถบสีธนาคารด้านซ้าย */}
                     <div
@@ -732,7 +727,7 @@ const Sidebar = forwardRef((props, ref) => {
                               title: "คัดลอกสำเร็จ",
                               text: `คัดลอกเลขบัญชี ${bankText} แล้ว`,
                               icon: "success",
-                              timer: 1500,
+                              timer: 2000,
                               showConfirmButton: false,
                               toast: true,
                               position: "top",
@@ -755,10 +750,7 @@ const Sidebar = forwardRef((props, ref) => {
                 );
               })
             ) : (
-              <div className="text-center py-5 text-muted">
-                <div className="spinner-border spinner-border-sm text-primary mb-2"></div>
-                <div>กำลังโหลดข้อมูลธนาคาร...</div>
-              </div>
+              <Loading text="กำลังโหลดข้อมูลธนาคาร..." />
             )}
 
             {/* 3. กล่องแจ้งโอนเงิน LINE (รวมอยู่ในส่วนที่ Scroll ได้) */}
@@ -804,7 +796,7 @@ const Sidebar = forwardRef((props, ref) => {
                 >
                   <i
                     className="fa-solid fa-chevron-right"
-                    style={{ fontSize: "0.8rem" }}
+                    style={{ fontSize: "0.85rem" }}
                   ></i>
                 </div>
               </div>
@@ -819,10 +811,9 @@ const Sidebar = forwardRef((props, ref) => {
             <button
               type="button"
               onClick={handleChangePackage}
-              className="btn btn-dark btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm submit-btn"
+              className="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm submit-btn"
               disabled={!choosePackage || banks.length === 0}
               style={{
-                backgroundColor: "#1e293b",
                 border: "none",
                 fontSize: "1.1rem",
               }}
@@ -839,15 +830,15 @@ const Sidebar = forwardRef((props, ref) => {
           /* ตกแต่ง Scrollbar ด้านในให้ดูคลีน (Mac/iOS style) */
           .custom-scrollbar::-webkit-scrollbar { width: 6px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--color-border-strong); border-radius: 10px; }
           
           /* เอฟเฟกต์ต่างๆ */
           .bank-card { transition: all 0.2s ease; background-color: #fff; }
-          .bank-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #cbd5e1 !important; }
+          .bank-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: var(--color-border-strong) !important; }
           .line-action-box { transition: all 0.2s ease; }
           .line-action-box:hover { background-color: #dcfce7 !important; border-color: #86efac !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(22, 101, 52, 0.08); }
           .submit-btn { transition: all 0.2s ease; }
-          .submit-btn:hover { background-color: #0f172a !important; transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important; }
+          .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important; }
           .submit-btn:active { transform: scale(0.98); }
         `}</style>
       </Modal>

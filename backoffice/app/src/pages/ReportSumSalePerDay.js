@@ -2,7 +2,7 @@ import Template from "./Template";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import config from "../config";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import Modal from "../components/Modal";
 import * as dayjs from 'dayjs';
 
@@ -107,7 +107,7 @@ function ReportSumSalePerDay() {
             {/* โซนค้นหา (Filter) */}
             <div
               className="card-body bg-white border-top border-bottom py-3"
-              style={{ borderColor: "#f1f5f9" }}
+              style={{ borderColor: "var(--color-row-hover)" }}
             >
               <div className="row g-3 align-items-center">
                 <div className="col-auto">
@@ -212,7 +212,7 @@ function ReportSumSalePerDay() {
                               onClick={(e) => setSelectedDay(item)}
                               data-bs-toggle="modal"
                               data-bs-target="#modalInfo"
-                              className="btn btn-info btn-sm px-3 rounded-pill text-white fw-bold shadow-sm btn-detail"
+                              className="btn btn-outline-primary btn-sm px-3 rounded-pill fw-bold btn-detail"
                             >
                               <i className="fa-solid fa-list-ul me-2"></i>
                               ดูรายละเอียด
@@ -248,53 +248,6 @@ function ReportSumSalePerDay() {
           </div>
         </div>
 
-        <style>{`
-        /* เงาของการ์ด */
-        .shadow-custom {
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
-        }
-
-        /* ตกแต่งตาราง */
-        .custom-table td {
-          border-bottom: 1px solid #f1f5f9;
-          vertical-align: middle;
-        }
-
-        /* Hover Effect ของแถวตาราง */
-        .custom-table tbody tr {
-          transition: all 0.25s ease;
-        }
-        .custom-table tbody tr:hover {
-          background-color: #fcfdfe;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ปุ่มค้นหา */
-        .btn-search {
-          background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
-          border: none;
-          transition: all 0.2s ease;
-        }
-        .btn-search:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
-        }
-        .btn-search:active {
-          transform: scale(0.96);
-        }
-
-        /* ปรับแต่ง Input Group ให้ดูนุ่มนวลขึ้น */
-        .input-group .input-group-text, .input-group .form-select {
-          border-color: #e2e8f0;
-        }
-        .input-group .form-select:focus {
-          box-shadow: none;
-          border-color: #cbd5e1;
-        }
-      `}</style>
       </Template>
 
       <Modal
@@ -396,11 +349,11 @@ function ReportSumSalePerDay() {
                       {/* ชื่อแพ็กเกจ */}
                       <td className="py-3">
                         {item.package?.name ? (
-                          <span className="badge bg-info-subtle text-info px-3 py-2 rounded-pill shadow-sm border border-info-subtle">
+                          <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                             {item.package.name}
                           </span>
                         ) : (
-                          <span className="badge bg-light text-secondary px-3 py-2 rounded-pill border">
+                          <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                             ไม่ระบุ
                           </span>
                         )}

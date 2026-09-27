@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -44,6 +44,7 @@ function Template(props) {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ใช่, ออกจากระบบ",
+      confirmButtonColor: DANGER_COLOR,
       cancelButtonText: "ยกเลิก",
       customClass: {
         confirmButton:
@@ -184,7 +185,7 @@ function Template(props) {
             >
               <i
                 className="fa-solid fa-user text-white"
-                style={{ fontSize: "0.8rem" }}
+                style={{ fontSize: "0.85rem" }}
               ></i>
             </div>
             <div className="ms-3 overflow-hidden text-nowrap">

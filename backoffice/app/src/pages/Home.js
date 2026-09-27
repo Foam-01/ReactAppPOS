@@ -12,7 +12,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import config from "../config";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 
 ChartJS.register(
   CategoryScale,
@@ -167,7 +167,7 @@ function Home() {
             {/* Filter */}
             <div
               className="card-body bg-white border-top border-bottom py-3"
-              style={{ borderColor: "#f1f5f9" }}
+              style={{ borderColor: "var(--color-row-hover)" }}
             >
               <div className="row g-3 align-items-center">
                 <div className="col-auto">
@@ -229,19 +229,6 @@ function Home() {
           </div>
         </div>
 
-        <style>{`
-          .shadow-custom { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important; }
-          .btn-search {
-            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
-            border: none; transition: all 0.2s ease;
-          }
-          .btn-search:hover {
-            transform: translateY(-1px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
-          }
-          .btn-search:active { transform: scale(0.96); }
-          .input-group .input-group-text, .input-group .form-select { border-color: #e2e8f0; }
-          .input-group .form-select:focus { box-shadow: none; border-color: #cbd5e1; }
-        `}</style>
       </Template>
     </>
   );

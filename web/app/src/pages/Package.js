@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import { useNavigate } from "react-router-dom";
 
 function Package() {
@@ -143,7 +143,7 @@ function Package() {
             <div
               className="p-4 rounded-4 shadow-sm border border-primary border-opacity-25"
               style={{
-                background: "linear-gradient(135deg, #0d6efd 0%, #0043a8 100%)",
+                background: "linear-gradient(135deg, var(--color-primary) 0%, #0043a8 100%)",
                 color: "#ffffff",
               }}
             >

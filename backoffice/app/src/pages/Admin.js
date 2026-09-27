@@ -1,4 +1,4 @@
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import Template from "./Template";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -78,7 +78,7 @@ function Admin() {
               title: "บันทึกแล้ว",
               icon: "success",
               showConfirmButton: false,
-              timer: 1500,
+              timer: 2000,
             });
 
             // ปิด Modal
@@ -120,9 +120,8 @@ function Admin() {
       text: `คุณต้องการลบข้อมูลผู้ใช้งาน ${item.name} ใช่หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
       confirmButtonText: "ลบ",
+      confirmButtonColor: DANGER_COLOR,
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -213,7 +212,7 @@ function Admin() {
                 className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm btn-hover-scale"
                 style={{
                   background:
-                    "linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%)",
+                    "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)",
                   border: "none",
                 }}
               >
@@ -287,12 +286,12 @@ function Admin() {
                           <td className="py-3">
                             {/* ทำป้ายสีให้ต่างกันตาม Level */}
                             {item.level === "admin" ? (
-                              <span className="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill border border-primary-subtle shadow-sm">
+                              <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                                 <i className="fa-solid fa-crown me-1 text-warning"></i>{" "}
                                 Admin
                               </span>
                             ) : (
-                              <span className="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill border border-secondary-subtle">
+                              <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                                 <i className="fa-solid fa-user-gear me-1"></i>{" "}
                                 Sub Admin
                               </span>
@@ -350,27 +349,9 @@ function Admin() {
         </div>
 
         <style>{`
-          /* เงาการ์ดและเอฟเฟกต์ตาราง */
-          .shadow-custom { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important; }
-          .custom-table td { border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-          .custom-table tbody tr { transition: all 0.25s ease; }
-          .custom-table tbody tr:hover {
-            background-color: #fcfdfe; transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative; z-index: 1;
-          }
-          
-          /* เอฟเฟกต์ปุ่ม */
-          .btn-hover-scale { transition: all 0.2s ease; }
-          .btn-hover-scale:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important; }
-          .btn-hover-scale:active { transform: scale(0.95); }
-          
-          /* ปุ่ม Action (ดินสอ, ถังขยะ) */
-          .btn-action { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; background: #fff;}
-          .btn-action:hover { transform: scale(1.1); }
-          
           /* ตกแต่ง Input Form ให้ดูนุ่มขึ้น */
-          .form-label-custom { font-size: 0.85rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
-          .form-control-custom { border: 1px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 0.5rem; transition: all 0.2s; }
+          .form-label-custom { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+          .form-control-custom { border: 1px solid var(--color-border); padding: 0.6rem 1rem; border-radius: 0.5rem; transition: all 0.2s; }
           .form-control-custom:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15); }
         `}</style>
       </Template>
@@ -517,7 +498,7 @@ function Admin() {
               onClick={handleSave}
               className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm btn-hover-scale"
               style={{
-                background: "linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%)",
+                background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)",
                 border: "none",
               }}
             >

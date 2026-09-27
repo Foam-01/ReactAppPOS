@@ -1,5 +1,5 @@
 import config from "../config";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import { useNavigate } from "react-router-dom";
 import Modal from './Modal'
 import { useState } from "react";
@@ -16,9 +16,8 @@ function Navbar() {
         text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
         icon: 'warning', // เปลี่ยนเป็น warning เพื่อให้ดูสำคัญขึ้น
         showCancelButton: true,
-        confirmButtonColor: '#d33', // สีแดงสำหรับปุ่มยืนยัน
-        cancelButtonColor: '#3085d6', // สีฟ้าสำหรับปุ่มยกเลิก
         confirmButtonText: 'ใช่, ออกจากระบบ',
+        confirmButtonColor: DANGER_COLOR,
         cancelButtonText: 'ยกเลิก',
         reverseButtons: true // สลับตำแหน่งปุ่มให้ 'ยกเลิก' อยู่ซ้าย 'ออกจากระบบ' อยู่ขวา (ตามหลัก UX)
 
@@ -86,7 +85,7 @@ function Navbar() {
               href="#"
               role="button"
             >
-              <i className="fas fa-bars"></i>
+              <i className="fa-solid fa-bars"></i>
             </a>
           </li>
         </ul>
@@ -96,13 +95,13 @@ function Navbar() {
             {/* ปุ่ม Profile: แก้ btb เป็น btn และ btn-infoo เป็น btn-info */}
             <button onClick={handleEditProfile} data-toggle='modal' data-target='#modalEditProfile' 
               className="btn btn-info btn-sm mr-2 text-white">
-              <i className="fa fa-user mr-2"></i>
+              <i className="fa-solid fa-user mr-2"></i>
               Profile
             </button>
 
             {/* ปุ่ม Sign Out: เพิ่ม btn-sm เพื่อให้ขนาดเท่ากันกับปุ่มข้างๆ */}
             <button onClick={handleSignOut} className="btn btn-danger btn-sm">
-              <i className="fa fa-times mr-2"></i>
+              <i className="fa-solid fa-times mr-2"></i>
               ออกจากระบบ
             </button>
           </li>
@@ -118,7 +117,7 @@ function Navbar() {
         </div>
         <div className="mt-3">
               <button onClick={handleChangeProfile} className="btn btn-primary">
-                <i className="fa fa-check mr-2"></i>
+                <i className="fa-solid fa-check mr-2"></i>
                 Save
               </button>
         </div>

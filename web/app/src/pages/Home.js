@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import Template from "../components/Template";
 import axios from "axios";
 import config from "../config";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import * as dayjs from "dayjs";
+import EmptyState from "../components/EmptyState";
+import Loading from "../components/Loading";
 import Modal from "../components/Modal"; // 🌟 อย่าลืม Import Modal เข้ามาด้วยนะครับ
 
 function Home() {
@@ -87,7 +89,7 @@ function Home() {
             className="btn btn-light bg-white border shadow-sm rounded-pill px-3 py-2 btn-hover"
           >
             <i
-              className={`fas fa-sync-alt text-primary ${isLoading ? "fa-spin" : ""} me-2`}
+              className={`fa-solid fa-sync-alt text-primary ${isLoading ? "fa-spin" : ""} me-2`}
             ></i>
             รีเฟรชข้อมูล
           </button>
@@ -113,11 +115,11 @@ function Home() {
                     className="icon-box bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center"
                     style={{ width: "48px", height: "48px" }}
                   >
-                    <i className="fas fa-wallet fs-5"></i>
+                    <i className="fa-solid fa-wallet fs-5"></i>
                   </div>
                 </div>
                 <div className="mt-3 text-success small fw-bold">
-                  <i className="fas fa-arrow-up me-1"></i> อัปเดตจากทุกบิลขาย
+                  <i className="fa-solid fa-arrow-up me-1"></i> อัปเดตจากทุกบิลขาย
                 </div>
                 <div
                   className="position-absolute opacity-10"
@@ -127,7 +129,7 @@ function Home() {
                     transform: "scale(2.5)",
                   }}
                 >
-                  <i className="fas fa-chart-line text-success"></i>
+                  <i className="fa-solid fa-chart-line text-success"></i>
                 </div>
               </div>
             </div>
@@ -149,11 +151,11 @@ function Home() {
                     className="icon-box bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
                     style={{ width: "48px", height: "48px" }}
                   >
-                    <i className="fas fa-receipt fs-5"></i>
+                    <i className="fa-solid fa-receipt fs-5"></i>
                   </div>
                 </div>
                 <div className="mt-3 text-primary small fw-bold">
-                  <i className="fas fa-check-circle me-1"></i> รายการขายสำเร็จ
+                  <i className="fa-solid fa-check-circle me-1"></i> รายการขายสำเร็จ
                 </div>
                 <div
                   className="position-absolute opacity-10"
@@ -163,7 +165,7 @@ function Home() {
                     transform: "scale(2.5)",
                   }}
                 >
-                  <i className="fas fa-file-invoice text-primary"></i>
+                  <i className="fa-solid fa-file-invoice text-primary"></i>
                 </div>
               </div>
             </div>
@@ -185,11 +187,11 @@ function Home() {
                     className="icon-box bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center"
                     style={{ width: "48px", height: "48px" }}
                   >
-                    <i className="fas fa-utensils fs-5"></i>
+                    <i className="fa-solid fa-utensils fs-5"></i>
                   </div>
                 </div>
                 <div className="mt-3 text-warning small fw-bold">
-                  <i className="fas fa-box-open me-1"></i> พร้อมขายหน้าร้าน
+                  <i className="fa-solid fa-box-open me-1"></i> พร้อมขายหน้าร้าน
                 </div>
                 <div
                   className="position-absolute opacity-10"
@@ -199,7 +201,7 @@ function Home() {
                     transform: "scale(2.5)",
                   }}
                 >
-                  <i className="fas fa-hamburger text-warning"></i>
+                  <i className="fa-solid fa-hamburger text-warning"></i>
                 </div>
               </div>
             </div>
@@ -221,11 +223,11 @@ function Home() {
                     className="icon-box bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center"
                     style={{ width: "48px", height: "48px" }}
                   >
-                    <i className="fas fa-cubes fs-5"></i>
+                    <i className="fa-solid fa-cubes fs-5"></i>
                   </div>
                 </div>
                 <div className="mt-3 text-danger small fw-bold">
-                  <i className="fas fa-layer-group me-1"></i> ชิ้น/หน่วยในคลัง
+                  <i className="fa-solid fa-layer-group me-1"></i> ชิ้น/หน่วยในคลัง
                 </div>
                 <div
                   className="position-absolute opacity-10"
@@ -235,7 +237,7 @@ function Home() {
                     transform: "scale(2.5)",
                   }}
                 >
-                  <i className="fas fa-boxes text-danger"></i>
+                  <i className="fa-solid fa-boxes text-danger"></i>
                 </div>
               </div>
             </div>
@@ -248,14 +250,14 @@ function Home() {
             <div className="card shadow-sm border-0 rounded-4">
               <div className="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
                 <h5 className="mb-0 fw-bold text-dark">
-                  <i className="fas fa-history text-secondary me-2"></i>
+                  <i className="fa-solid fa-history text-secondary me-2"></i>
                   รายการขายล่าสุด (5 รายการ)
                 </h5>
               </div>
               <div className="card-body p-0">
                 <div className="table-responsive">
                   <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light text-muted small text-uppercase fw-bold">
+                    <thead className="table-light text-muted small fw-bold">
                       <tr>
                         <th className="py-3 ps-4 border-0">เลขบิล</th>
                         <th className="py-3 border-0">วันที่ / เวลา</th>
@@ -282,7 +284,7 @@ function Home() {
                           return (
                             <tr key={index}>
                               <td className="ps-4 py-3">
-                                <span className="badge bg-light text-dark border px-2 py-1 fw-bold font-monospace">
+                                <span className="badge bg-light text-dark border fw-normal px-2 py-1 font-monospace">
                                   #{bill.id}
                                 </span>
                               </td>
@@ -295,7 +297,7 @@ function Home() {
                                 </div>
                               </td>
                               <td className="text-center">
-                                <span className="badge bg-secondary-subtle text-secondary px-2 py-1 rounded-pill">
+                                <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                                   {bill.billSaleDetails?.length || 0} รายการ
                                 </span>
                               </td>
@@ -314,7 +316,7 @@ function Home() {
                                   data-target="#modalRecentBillDetail"
                                   onClick={() => setSelectedBill(bill)}
                                 >
-                                  <i className="fas fa-search me-1"></i>{" "}
+                                  <i className="fa-solid fa-search me-1"></i>{" "}
                                   ดูรายละเอียด
                                 </button>
                               </td>
@@ -323,22 +325,11 @@ function Home() {
                         })
                       ) : (
                         <tr>
-                          <td
-                            colSpan="5"
-                            className="text-center py-5 text-muted"
-                          >
+                          <td colSpan="5">
                             {isLoading ? (
-                              <div>
-                                <i className="fas fa-spinner fa-spin fa-2x mb-2 text-primary"></i>
-                                <br />
-                                กำลังโหลดข้อมูล...
-                              </div>
+                              <Loading />
                             ) : (
-                              <div>
-                                <i className="fas fa-file-invoice fa-3x mb-3 opacity-25"></i>
-                                <br />
-                                ยังไม่มีประวัติการขาย
-                              </div>
+                              <EmptyState icon="fa-file-invoice" text="ยังไม่มีประวัติการขาย" />
                             )}
                           </td>
                         </tr>
@@ -376,13 +367,13 @@ function Home() {
               </span>
             </span>
             <span>
-              สถานะ: <span className="badge bg-success">ชำระเงินแล้ว</span>
+              สถานะ: <span className="badge bg-success-subtle text-success rounded-pill px-3 py-1">ชำระเงินแล้ว</span>
             </span>
           </div>
 
           <div className="table-responsive border rounded-3 overflow-hidden shadow-sm">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light text-muted small text-uppercase fw-bold">
+              <thead className="table-light text-muted small fw-bold">
                 <tr>
                   <th className="py-3 ps-3 border-0">รายการสินค้า</th>
                   <th className="py-3 border-0 text-end">ราคา/หน่วย</th>
@@ -402,7 +393,7 @@ function Home() {
                       })}
                     </td>
                     <td className="text-center">
-                      <span className="badge bg-light text-dark border fw-normal px-3 py-2 font-monospace">
+                      <span className="badge bg-light text-dark border fw-normal px-2 py-1 font-monospace">
                         {item.qty}
                       </span>
                     </td>

@@ -1,8 +1,9 @@
 import Template from "../components/Template";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import config from "../config";
+import EmptyState from "../components/EmptyState";
 import axios from "axios";
 
 function User() {
@@ -109,8 +110,8 @@ function User() {
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'ลบ',
+            confirmButtonColor: DANGER_COLOR,
             cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#d33'
 
             }).then(async res => {
                 if (res.isConfirmed) {
@@ -145,7 +146,7 @@ function User() {
                 <div className="card shadow-sm border-0">
                     <div className="card-header bg-white py-3">
                         <div className="card-title h5 mb-0 text-primary fw-bold">
-                            <i className="fas fa-user-shield mr-2"></i> ผู้ใช้งานระบบ
+                            <i className="fa-solid fa-user-shield mr-2"></i> ผู้ใช้งานระบบ
                         </div>
                     </div>
 
@@ -156,13 +157,13 @@ function User() {
                             data-target="#modalUser"
                             className="btn btn-primary shadow-sm px-3 py-2"
                         >
-                            <i className="fa fa-plus mr-2"></i>
+                            <i className="fa-solid fa-plus mr-2"></i>
                             เพิ่มผู้ใช้
                         </button>
 
                         <div className="table-responsive mt-3">
-                            <table className="table table-bordered table-striped table-hover align-middle">
-                                <thead className="table-light text-secondary">
+                            <table className="table table-hover align-middle mb-0">
+                                <thead className="table-light text-muted small fw-bold">
                                     <tr>
                                         <th>ชื่อ</th>
                                         <th>Username</th>
@@ -177,7 +178,7 @@ function User() {
                                                 <td>{item.name}</td>
                                                 <td>{item.usr}</td>
                                                 <td>
-                                                    <span className={`badge ${item.level === 'admin' ? 'bg-success' : 'bg-info'}`}>
+                                                    <span className={`badge rounded-pill px-3 py-1 ${item.level === 'admin' ? 'bg-primary-subtle text-primary' : 'bg-secondary-subtle text-secondary'}`}>
                                                         {item.level}
                                                     </span>
                                                 </td>
@@ -185,20 +186,20 @@ function User() {
                                                     <button onClick={e => setUser(item)}
                                                      data-toggle="modal"
                                                      data-target="#modalUser"
-                                                     className="btn btn-info btn-sm me-1 shadow-sm text-white">
-                                                        <i className="fa fa-pencil"></i>
+                                                     className="btn btn-outline-primary btn-sm me-1">
+                                                        <i className="fa-solid fa-pencil"></i>
                                                     </button>
-                                                    <button onClick={e => handleDelete(item)} className="btn btn-danger btn-sm shadow-sm">
-                                                        <i className="fa fa-trash"></i>
+                                                    <button onClick={e => handleDelete(item)} className="btn btn-outline-danger btn-sm">
+                                                        <i className="fa-solid fa-trash"></i>
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="4" className="text-center py-4 text-muted">
-                                                ไม่พบข้อมูลผู้ใช้งาน
-                                            </td>
+                                            <td colSpan="4">
+<EmptyState text="ไม่พบข้อมูลผู้ใช้งาน" />
+</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -238,7 +239,7 @@ function User() {
 
                 <div className="mt-4 pt-2 border-top">
                     <button onClick={handleSave} className="btn btn-primary px-4 shadow-sm">
-                        <i className="fa fa-check me-2"></i>
+                        <i className="fa-solid fa-check me-2"></i>
                         Save
                     </button>
                 </div>

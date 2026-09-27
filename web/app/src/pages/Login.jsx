@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import Swal from "sweetalert2";
+import Swal from "../utils/swal";
 import config from "../config";
 import { useNavigate } from "react-router-dom";
 
@@ -64,7 +64,7 @@ function Login() {
                   <label className="form-label fw-semibold text-secondary">เบอร์โทร</label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border-end-0">
-                      <i className="fa fa-phone text-muted"></i>
+                      <i className="fa-solid fa-phone text-muted"></i>
                     </span>
                     <input 
                       onChange={e => setPhone(e.target.value)} 
@@ -78,7 +78,7 @@ function Login() {
                   <label className="form-label fw-semibold text-secondary">Password</label>
                   <div className="input-group">
                     <span className="input-group-text bg-light border-end-0">
-                      <i className="fa fa-lock text-muted"></i>
+                      <i className="fa-solid fa-lock text-muted"></i>
                     </span>
                     <input 
                       onChange={e => setPass(e.target.value)} 
@@ -93,7 +93,7 @@ function Login() {
                   onClick={handleSignIn} 
                   className="btn btn-primary btn-lg w-100 rounded-pill shadow-sm fw-bold mt-2"
                 >
-                  <i className="fa fa-check me-2"></i>
+                  <i className="fa-solid fa-check me-2"></i>
                   เข้าสู่ระบบ
                 </button>
               </div>

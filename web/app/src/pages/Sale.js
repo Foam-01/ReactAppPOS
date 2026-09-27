@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import * as dayjs from "dayjs";
+import EmptyState from "../components/EmptyState";
 import PrintJS from "print-js";
 
 function Sale() {
@@ -114,9 +115,8 @@ function Sale() {
         text: `คุณต้องการลบรายการ "${item.product?.name || "สินค้า"}" ใช่หรือไม่?`,
         icon: "warning", // เปลี่ยนจาก question เป็น warning เพื่อความชัดเจน
         showCancelButton: true,
-        confirmButtonColor: "#e11d48", // สีแดง Rose (โทนเดียวกับที่คุณชอบ)
-        cancelButtonColor: "#64748b", // สีเทา Slate
         confirmButtonText: "ลบ",
+        confirmButtonColor: DANGER_COLOR,
         cancelButtonText: "ยกเลิก",
         reverseButtons: true, // เอาปุ่มยืนยันไว้ขวา (User มักจะถนัดแบบนี้)
       });
@@ -154,7 +154,6 @@ function Sale() {
         title: "เกิดข้อผิดพลาด",
         text: e.message,
         icon: "error",
-        confirmButtonColor: "#4f46e5",
       });
     }
   };
@@ -228,8 +227,6 @@ function Sale() {
       icon: "question",
       showCancelButton: true,
       showConfirmButton: true,
-      confirmButtonColor: "#198754",
-      cancelButtonColor: "#6c757d",
       confirmButtonText: "จบการขาย",
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
@@ -362,7 +359,7 @@ function Sale() {
             <div className="card shadow-sm border">
               <div className="card-header bg-white py-3 border-bottom">
                 <h5 className="mb-0 fw-bold text-dark">
-                  <i className="fa fa-th-large text-primary me-2"></i>{" "}
+                  <i className="fa-solid fa-th-large text-primary me-2"></i>{" "}
                   รายการสินค้า
                 </h5>
               </div>
@@ -408,7 +405,7 @@ function Sale() {
                               {item.name}
                             </div>
                             <button className="btn btn-primary btn-sm w-100 mt-auto fw-bold">
-                              <i className="fa fa-plus me-1"></i> เลือก
+                              <i className="fa-solid fa-plus me-1"></i> เลือก
                             </button>
                           </div>
                         </div>
@@ -448,7 +445,7 @@ function Sale() {
                 </div>
 
                 <div className="h6 fw-bold text-dark mb-3">
-                  <i className="fa fa-shopping-cart text-primary me-2"></i>{" "}
+                  <i className="fa-solid fa-shopping-cart text-primary me-2"></i>{" "}
                   รายการขาย
                 </div>
 
@@ -462,13 +459,13 @@ function Sale() {
                   }}
                 >
                   <table
-                    className="table table-striped table-hover align-middle mb-0"
+                    className="table table-hover align-middle mb-0"
                     style={{
                       minWidth: "350px",
                       tableLayout: "fixed",
                     }}
                   >
-                    <thead className="table-light small sticky-top">
+                    <thead className="table-light text-muted small fw-bold sticky-top">
                       <tr>
                         {/* แบ่งสัดส่วน % ให้ชัดเจน */}
                         <th className="ps-2" style={{ width: "40%" }}>
@@ -502,7 +499,7 @@ function Sale() {
                               </div>
                               <div
                                 className="text-muted"
-                                style={{ fontSize: "10px" }}
+                                style={{ fontSize: "0.75rem" }}
                               >
                                 {Number(item.price).toLocaleString()} x{" "}
                                 {item.qty}
@@ -526,7 +523,7 @@ function Sale() {
                                   style={{ background: "transparent" }}
                                 >
                                   <i
-                                    className="fa fa-pencil-alt"
+                                    className="fa-solid fa-pencil-alt"
                                     style={{ fontSize: "14px" }}
                                   ></i>
                                 </button>
@@ -537,7 +534,7 @@ function Sale() {
                                   style={{ background: "transparent" }}
                                 >
                                   <i
-                                    className="fa fa-times-circle"
+                                    className="fa-solid fa-times-circle"
                                     style={{ fontSize: "16px" }}
                                   ></i>
                                 </button>
@@ -547,13 +544,9 @@ function Sale() {
                         ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan="4"
-                            className="text-center py-5 text-muted opacity-50"
-                          >
-                            <i className="fa fa-shopping-basket fa-3x mb-3 d-block"></i>
-                            ยังไม่มีรายการสินค้า
-                          </td>
+                          <td colSpan="4">
+<EmptyState icon="fa-shopping-basket" text="ยังไม่มีรายการสินค้า" />
+</td>
                         </tr>
                       )}
                     </tbody>
@@ -588,7 +581,7 @@ function Sale() {
                           : 1,
                     }}
                   >
-                    <i className="fa fa-check-circle me-2"></i> ยืนยันการขาย
+                    <i className="fa-solid fa-check-circle me-2"></i> ยืนยันการขาย
                   </button>
 
                   <div className="row g-2">
@@ -604,7 +597,7 @@ function Sale() {
                           borderRadius: "10px",
                         }}
                       >
-                        <i className="fa fa-file-invoice me-1"></i> บิลวันนี้
+                        <i className="fa-solid fa-file-invoice me-1"></i> บิลวันนี้
                       </button>
                     </div>
 
@@ -621,7 +614,7 @@ function Sale() {
                         }}
                       >
                         {/* เปลี่ยนไอคอนเป็นประวัติ (history) หรือนาฬิกา (clock) */}
-                        <i className="fa fa-history me-1"></i> บิลล่าสุด
+                        <i className="fa-solid fa-history me-1"></i> บิลล่าสุด
                       </button>
                     </div>
                   </div>
@@ -632,7 +625,7 @@ function Sale() {
         </div>
 
         <style>{`
-        .hover-effect:hover { border-color: #0d6efd !important; transition: 0.2s; }
+        .hover-effect:hover { border-color: var(--color-primary) !important; transition: 0.2s; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 10px; }
       `}</style>
@@ -645,7 +638,7 @@ function Sale() {
               className="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3"
               style={{ width: "60px", height: "60px" }}
             >
-              <i className="fa fa-calculator fa-2x"></i>
+              <i className="fa-solid fa-calculator fa-2x"></i>
             </div>
             <h6 className="fw-bold mb-1">ระบุจำนวนสินค้า</h6>
             <p className="text-muted small">ระบุจำนวนที่ต้องการบันทึกลงในบิล</p>
@@ -669,7 +662,7 @@ function Sale() {
                   })
                 }
               >
-                <i className="fa fa-minus text-danger fs-5"></i>
+                <i className="fa-solid fa-minus text-danger fs-5"></i>
               </button>
 
               {/* ช่องตัวเลข (กว้าง 50%) */}
@@ -695,7 +688,7 @@ function Sale() {
                   setItem({ ...item, qty: parseInt(item.qty || 0) + 1 })
                 }
               >
-                <i className="fa fa-plus text-success fs-5"></i>
+                <i className="fa-solid fa-plus text-success fs-5"></i>
               </button>
             </div>
           </div>
@@ -710,7 +703,7 @@ function Sale() {
                   "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
               }}
             >
-              <i className="fa fa-check-circle me-2 fs-5"></i>
+              <i className="fa-solid fa-check-circle me-2 fs-5"></i>
               บันทึกรายการ
             </button>
           </div>
@@ -773,7 +766,7 @@ function Sale() {
               </label>
               <div className="input-group input-group-lg shadow-sm">
                 <span className="input-group-text bg-white border-end-0">
-                  <i className="fa fa-money-bill-wave text-muted"></i>
+                  <i className="fa-solid fa-money-bill-wave text-muted"></i>
                 </span>
                 <input
                   type="number"
@@ -816,18 +809,18 @@ function Sale() {
                 onClick={() => setInputMoney(totalPrice)}
                 className="btn btn-outline-secondary btn-lg w-100 py-3 fw-bold rounded-3 border-2 hover-shadow"
               >
-                <i className="fa fa-mouse-pointer me-2 small"></i>
+                <i className="fa-solid fa-mouse-pointer me-2 small"></i>
                 จ่ายพอดี
               </button>
             </div>
             <div className="col-6">
               <button
                 onClick={handleEndSale}
-                className="btn btn-dark btn-lg w-100 py-3 fw-bold rounded-3 shadow border-0"
+                className="btn btn-primary btn-lg w-100 py-3 fw-bold rounded-3 shadow border-0"
                 disabled={inputMoney - totalPrice < 0}
                 style={{ transition: "all 0.2s" }}
               >
-                <i className="fa fa-check-circle me-2"></i>
+                <i className="fa-solid fa-check-circle me-2"></i>
                 จบการขาย
               </button>
             </div>
@@ -868,7 +861,7 @@ function Sale() {
             style={{ maxHeight: "60vh" }}
           >
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light sticky-top">
+              <thead className="table-light text-muted small fw-bold sticky-top">
                 <tr
                   className="small text-uppercase"
                   style={{ letterSpacing: "0.5px" }}
@@ -916,10 +909,9 @@ function Sale() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="text-center py-5 text-muted">
-                      <i className="fa fa-file-invoice fa-2x mb-2 d-block opacity-25"></i>
-                      ไม่พบข้อมูลรายการในบิลนี้
-                    </td>
+                    <td colSpan="5">
+<EmptyState icon="fa-file-invoice" text="ไม่พบข้อมูลรายการในบิลนี้" />
+</td>
                   </tr>
                 )}
               </tbody>
@@ -944,7 +936,7 @@ function Sale() {
               onClick={handlePrint}
               className="btn btn-primary px-4 rounded-pill ms-2 shadow-sm"
             >
-              <i className="fa fa-print me-2"></i> พิมพ์บิลอีกครั้ง
+              <i className="fa-solid fa-print me-2"></i> พิมพ์บิลอีกครั้ง
             </button>
           </div>
         </div>
@@ -958,7 +950,7 @@ function Sale() {
         <div className="p-2">
           <div className="table-responsive border rounded-3 overflow-hidden shadow-sm">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+              <thead className="table-light text-muted small fw-bold">
                 <tr className="small text-uppercase fw-bold text-muted">
                   <th width="120px" className="text-center py-3 border-0"></th>
                   <th className="py-3 border-0">เลขบิล</th>
@@ -977,12 +969,12 @@ function Sale() {
                           onClick={(e) => setSelectedBill(item)}
                           data-toggle="modal"
                           data-target="#modalBillSaleDetail"
-                          className="btn btn-sm btn-primary rounded-pill px-3 shadow-sm d-inline-flex align-items-center justify-content-center text-nowrap"
+                          className="btn btn-sm btn-outline-primary rounded-pill px-3 d-inline-flex align-items-center justify-content-center text-nowrap"
                           style={{ height: "32px", fontSize: "0.85rem" }}
                         >
                           <i
-                            className="fa fa-eye me-1"
-                            style={{ fontSize: "0.9rem" }}
+                            className="fa-solid fa-eye me-1"
+                            style={{ fontSize: "0.85rem" }}
                           ></i>
                           ดูรายการ
                         </button>
@@ -991,7 +983,7 @@ function Sale() {
                       <td className="text-end pe-4 text-muted">
                         {/* จัด Badge ให้ตรงกลางเหมือนกัน */}
                         <span className="badge bg-light text-dark fw-normal border d-inline-flex align-items-center px-2 py-1">
-                          <i className="fa fa-clock me-2 opacity-50"></i>
+                          <i className="fa-solid fa-clock me-2 opacity-50"></i>
                           {dayjs(item.createdAt).format("DD/MM/YYYY HH:mm")}
                         </span>
                       </td>
@@ -999,10 +991,9 @@ function Sale() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="text-center py-5 text-muted">
-                      <i className="fa fa-folder-open fa-3x mb-3 d-block opacity-25"></i>
-                      ยังไม่มีรายการขายในวันนี้
-                    </td>
+                    <td colSpan="3">
+<EmptyState icon="fa-folder-open" text="ยังไม่มีรายการขายในวันนี้" />
+</td>
                   </tr>
                 )}
               </tbody>
@@ -1029,7 +1020,7 @@ function Sale() {
           >
             <table className="table table-hover align-middle mb-0">
               <thead
-                className="table-light sticky-top"
+                className="table-light text-muted small fw-bold sticky-top"
                 style={{ zIndex: 10, top: 0 }}
               >
                 <tr className="small text-uppercase fw-bold text-muted border-bottom">
@@ -1055,7 +1046,7 @@ function Sale() {
                         })}
                       </td>
                       <td className="text-center">
-                        <span className="badge bg-light text-dark border fw-normal px-3">
+                        <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-normal">
                           {item.qty}
                         </span>
                       </td>
@@ -1068,13 +1059,9 @@ function Sale() {
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan="5"
-                      className="text-center py-5 text-muted font-italic"
-                    >
-                      <i className="fa fa-info-circle fa-2x mb-2 d-block opacity-25"></i>
-                      ไม่พบข้อมูลรายการสินค้าในบิลนี้
-                    </td>
+                    <td colSpan="5">
+<EmptyState icon="fa-info-circle" text="ไม่พบข้อมูลรายการสินค้าในบิลนี้" />
+</td>
                   </tr>
                 )}
               </tbody>

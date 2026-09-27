@@ -1,8 +1,9 @@
 import Template from "../components/Template";
-import Swal from "sweetalert2";
+import Swal, { DANGER_COLOR } from "../utils/swal";
 import config from "../config";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
 
 function Product() {
@@ -48,7 +49,7 @@ function Product() {
           title: "บันทึกข้อมูล",
           text: "บันทึกข้อมูลเรียบร้อยแล้ว",
           icon: "success",
-          timer: 1500, // เพิ่มให้ปิดเองอัตโนมัติเพื่อความลื่นไหล
+          timer: 2000, // เพิ่มให้ปิดเองอัตโนมัติเพื่อความลื่นไหล
         });
         // อาจจะเคลียร์ฟอร์มหลังบันทึกเสร็จ
         // setProduct({});
@@ -89,9 +90,8 @@ function Product() {
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      confirmButtonColor: DANGER_COLOR,
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#d33", // สีแดงเพื่อความปลอดภัย
-      cancelButtonColor: "#3085d6",
     }).then(async (res) => {
       // *** จุดสำคัญ: ต้องเช็คว่ากดยืนยันจริงๆ หรือไม่ ***
       if (res.isConfirmed) {
@@ -254,8 +254,8 @@ function Product() {
       text: "คุณยืนยันการลบภาพสินค้าใช่หรือไม่?",
       icon: "warning", // ใช้ warning จะดูเด่นกว่าสำหรับงานลบ
       showCancelButton: true,
-      confirmButtonColor: "#d33", // สีแดงให้รู้ว่าอันตราย
       confirmButtonText: "ลบ",
+      confirmButtonColor: DANGER_COLOR,
       cancelButtonText: "ยกเลิก",
     }).then(async (res) => {
       if (res.isConfirmed) {
@@ -290,7 +290,7 @@ function Product() {
         <div className="card shadow-sm">
           <div className="card-header bg-white py-3">
             <div className="card-title h5 mb-0 text-primary">
-              <i className="fa fa-utensils mr-2"></i> จัดการเมนูอาหาร
+              <i className="fa-solid fa-utensils mr-2"></i> จัดการเมนูอาหาร
             </div>
           </div>
           <div className="card-body">
@@ -302,13 +302,13 @@ function Product() {
                 data-target="#modalProduct"
                 className="btn btn-primary shadow-sm"
               >
-                <i className="fa fa-plus mr-2"></i> เพิ่มสินค้า
+                <i className="fa-solid fa-plus mr-2"></i> เพิ่มสินค้า
               </button>
             </div>
 
             <div className="table-responsive">
-              <table className="table table-bordered table-striped table-hover">
-                <thead className="bg-light text-secondary">
+              <table className="table table-hover align-middle mb-0">
+                <thead className="table-light text-muted small fw-bold">
                   <tr>
                     <th width="100px" className="text-center">
                       Barcode
@@ -355,7 +355,7 @@ function Product() {
                               className="btn btn-primary btn-sm shadow-sm"
                               title="จัดการรูปภาพ"
                             >
-                              <i className="fa fa-image"></i>
+                              <i className="fa-solid fa-image"></i>
                             </button>
 
                             {/* ปุ่มแก้ไข */}
@@ -363,19 +363,19 @@ function Product() {
                               onClick={(e) => setProduct(item)}
                               data-toggle="modal"
                               data-target="#modalProduct"
-                              className="btn btn-info btn-sm shadow-sm"
+                              className="btn btn-outline-primary btn-sm me-1"
                               title="แก้ไขข้อมูล"
                             >
-                              <i className="fa fa-pencil"></i>
+                              <i className="fa-solid fa-pencil"></i>
                             </button>
 
                             {/* ปุ่มลบ */}
                             <button
                               onClick={(e) => handleDelete(item)}
-                              className="btn btn-danger btn-sm shadow-sm"
+                              className="btn btn-outline-danger btn-sm"
                               title="ลบรายการ"
                             >
-                              <i className="fa fa-times"></i>
+                              <i className="fa-solid fa-times"></i>
                             </button>
                           </div>
                         </td>
@@ -383,13 +383,9 @@ function Product() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="6"
-                        className="text-center p-5 text-muted bg-light"
-                      >
-                        <i className="fa fa-box-open fa-3x mb-3 d-block opacity-50"></i>
-                        ยังไม่มีสินค้า
-                      </td>
+                      <td colSpan="6">
+<EmptyState icon="fa-box-open" text="ยังไม่มีสินค้า" />
+</td>
                     </tr>
                   )}
                 </tbody>
@@ -477,7 +473,7 @@ function Product() {
               onClick={handleSave}
               className="btn btn-primary px-4 shadow-sm"
             >
-              <i className="fa fa-check mr-2" />
+              <i className="fa-solid fa-check mr-2" />
               บันทึกรายการ
             </button>
           </div>
@@ -531,7 +527,7 @@ function Product() {
           {/* ส่วนเลือกภาพสินค้า */}
           <div className="col-12 mt-3 p-3 bg-light rounded border">
             <label className="fw-bold mb-2">
-              <i className="fa fa-cloud-upload mr-2 text-primary"></i>
+              <i className="fa-solid fa-cloud-upload mr-2 text-primary"></i>
               เลือกไฟล์ภาพสินค้า
             </label>
             <input
@@ -558,7 +554,7 @@ function Product() {
                 onClick={handleUplond}
                 className="btn btn-primary px-5 shadow-sm"
               >
-                <i className="fa fa-check mr-2"></i>
+                <i className="fa-solid fa-check mr-2"></i>
                 บันทึกรูปภาพ
               </button>
             ) : (
@@ -568,7 +564,7 @@ function Product() {
         </div>
 
         <div className="mt-4 fw-bold text-secondary border-bottom pb-2">
-          <i className="fa fa-images mr-2 text-primary"></i> คลังภาพสินค้า
+          <i className="fa-solid fa-images mr-2 text-primary"></i> คลังภาพสินค้า
         </div>
 
         <div className="row mt-3">
@@ -601,7 +597,7 @@ function Product() {
                     <div className="mb-2">
                       {item.isMain ? (
                         <button className="btn btn-success btn-sm w-100 shadow-sm fw-bold">
-                          <i className="fa fa-star mr-1"></i> ภาพหลัก
+                          <i className="fa-solid fa-star mr-1"></i> ภาพหลัก
                         </button>
                       ) : (
                         <button
@@ -618,7 +614,7 @@ function Product() {
                       onClick={(e) => handleDeleteProductImage(item)}
                       className="btn btn-outline-danger btn-sm w-100 border-0" // เพิ่ม border-0 ถ้าอยากให้ดูเบาขึ้นไปอีก
                     >
-                      <i className="fa fa-trash-alt mr-1"></i> ลบรูปภาพ
+                      <i className="fa-solid fa-trash-alt mr-1"></i> ลบรูปภาพ
                     </button>
                     
                   </div>
@@ -627,7 +623,7 @@ function Product() {
             ))
           ) : (
             <div className="col-12 text-center py-5 text-muted bg-light rounded">
-              <i className="fa fa-image fa-2x mb-2 d-block opacity-50"></i>
+              <i className="fa-solid fa-image fa-2x mb-2 d-block opacity-50"></i>
               ยังไม่มีรูปสินค้า
             </div>
           )}

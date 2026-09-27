@@ -7,24 +7,24 @@ function Modal(props) {
   return (
     <>
       <div
-        className="modal "
+        className="modal"
         id={props.id}
         tabIndex="-1"
-        aria-labelledby="exampleModalLabel"
+        aria-labelledby={`${props.id}-title`}
         aria-hidden="true"
       >
         <div className={modalSize}>
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLabel">
+              <h5 className="modal-title" id={`${props.id}-title`}>
                 {props.title}
               </h5>
-              <button
-                id="btnModalclose "
+              <button
                 type="button"
                 className="btn-close btnClose"
                 data-dismiss="modal"
-                aria-label="Close"
+                data-bs-dismiss="modal"
+                aria-label="ปิด"
               ></button>
             </div>
             <div className="modal-body">{props.children}</div>

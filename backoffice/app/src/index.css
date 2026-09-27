@@ -11,3 +11,79 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* ---------- Design tokens (ใช้ชุดเดียวกับ web) ---------- */
+:root {
+  --color-primary: #0d6efd;
+  --color-primary-hover: #0b5ed7;
+  --color-success: #198754;
+  --color-danger: #dc3545;
+  --color-warning: #ffc107;
+  --color-info: #0dcaf0;
+  --color-secondary: #64748b;
+
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-row-hover: #f1f5f9;
+
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.05);
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.85rem;
+}
+
+.text-xs { font-size: var(--text-xs) !important; }
+.text-sm { font-size: var(--text-sm) !important; }
+
+/* ---------- Shared components (เดิมเขียนซ้ำใน <style> ของแต่ละหน้า) ---------- */
+.shadow-custom { box-shadow: var(--shadow-card) !important; }
+
+.custom-table td { border-bottom: 1px solid var(--color-row-hover); vertical-align: middle; }
+.custom-table tbody tr { transition: all 0.25s ease; }
+.custom-table tbody tr:hover {
+  background-color: var(--color-surface-muted);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  position: relative;
+  z-index: 1;
+}
+
+.btn-search {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border: none;
+  transition: all 0.2s ease;
+}
+.btn-search:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important; }
+.btn-search:active { transform: scale(0.96); }
+
+.btn-hover-scale { transition: all 0.2s ease; }
+.btn-hover-scale:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important; }
+.btn-hover-scale:active { transform: scale(0.95); }
+
+.btn-detail { transition: all 0.2s ease; }
+.btn-detail:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.25) !important; }
+
+.btn-approve { transition: all 0.2s ease; }
+.btn-approve:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(25, 135, 84, 0.3) !important; }
+.btn-approve:active { transform: scale(0.95); }
+
+.btn-action {
+  width: 35px; height: 35px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease; background: var(--color-surface);
+}
+.btn-action:hover { transform: scale(1.1); }
+
+.input-group .input-group-text, .input-group .form-select { border-color: var(--color-border); }
+.input-group .form-select:focus { box-shadow: none; border-color: var(--color-border-strong); }
+
