@@ -1,4 +1,4 @@
-const sequelize = require("./connect");
+const sequelize = require("../connect");
 
 async function checkAllTables() {
   try {

@@ -2,13 +2,19 @@ import Template from "../components/Template";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { closeModal } from "../utils/modal";
+import { getErrorMessage } from "../utils/error";
 import config from "../config";
 import EmptyState from "../components/EmptyState";
 import axios from "axios";
+import { SearchBox } from "../components/ListToolbar";
+import { PageHeader, FilterBar, FilterBarButton, FilterBarClear } from "../components/PageHeader";
 
 function User() {
     const [user, setUser] = useState({ level: 'user' }); // กำหนดค่าเริ่มต้นให้ระดับสิทธิ์
+    const [isSaving, setIsSaving] = useState(false);
     const [users, setUsers] = useState([]);
+    const [search, setSearch] = useState('');
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
 
@@ -26,13 +32,25 @@ function User() {
         } catch (e) {
             Swal.fire({
                 title: 'เกิดข้อผิดพลาด',
-                text: e.message,
+                text: getErrorMessage(e),
                 icon: 'error'
             })
         }
     }
 
-    const handleSave = async () => {
+    // กันกดบันทึกซ้ำระหว่างรอ server
+    const handleSave = async (e) => {
+      if (e?.preventDefault) e.preventDefault();
+      if (isSaving) return;
+      setIsSaving(true);
+      try {
+        await saveData(e);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    const saveData = async () => {
     try {
         let url = '/user/insert';
         if (user.id !== undefined) {
@@ -78,17 +96,14 @@ function User() {
     } catch (e) {
         Swal.fire({
             title: 'เกิดข้อผิดพลาด',
-            text: e.response?.data?.message || e.message,
+            text: getErrorMessage(e),
             icon: 'error'
         });
     }
 }
 
     const handleClose = () => {
-        const btns = document.getElementsByClassName("btnClose");
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].click();
-        }
+        closeModal();
     };
 
     const clearForm = () => {
@@ -127,41 +142,53 @@ function User() {
                             fetchData();
                         }
                     }).catch(err => {
-                        throw err.response.data;
+                        throw err;
                     })
                 }
             })
         } catch (e) {
             Swal.fire({
                 title: 'เกิดข้อผิดพลาด',
-                text: e.response?.data?.message || e.message,
+                text: getErrorMessage(e),
                 icon: 'error'
             })
         }
     }
 
+    // ค้นหาฝั่งหน้าเว็บจากรายการที่โหลดแล้ว
+    const keyword = search.trim().toLowerCase();
+    const filteredUsers = keyword
+        ? users.filter(u => `${u.name} ${u.usr}`.toLowerCase().includes(keyword))
+        : users;
+
     return (
         <>
             <Template>
-                <div className="card shadow-sm border-0">
-                    <div className="card-header bg-white py-3">
-                        <div className="card-title h5 mb-0 text-primary fw-bold">
-                            <i className="fa-solid fa-user-shield mr-2"></i> ผู้ใช้งานระบบ
-                        </div>
-                    </div>
-
-                    <div className="card-body">
-                        <button
+                <PageHeader
+                    eyebrow="ร้านค้า / ผู้ใช้งาน"
+                    title="ผู้ใช้งานระบบ"
+                    description="จัดการบัญชีพนักงานและกำหนดระดับสิทธิ์การใช้งาน"
+                    count={`${filteredUsers.length.toLocaleString('th-TH')} คน`}
+                />
+                <FilterBar
+                    actions={
+                        <FilterBarButton
+                            variant="primary"
+                            icon="fa-solid fa-plus"
                             onClick={clearForm}
                             data-toggle="modal"
                             data-target="#modalUser"
-                            className="btn btn-primary shadow-sm px-3 py-2"
                         >
-                            <i className="fa-solid fa-plus mr-2"></i>
                             เพิ่มผู้ใช้
-                        </button>
-
-                        <div className="table-responsive mt-3">
+                        </FilterBarButton>
+                    }
+                >
+                    <SearchBox className="fb-search" value={search} onChange={setSearch} placeholder="ค้นหาชื่อหรือ Username" />
+                    {search && <FilterBarClear onClick={() => setSearch('')} />}
+                </FilterBar>
+                <div className="card shadow-sm border-0">
+                    <div className="card-body">
+                        <div className="table-responsive">
                             <table className="table table-hover align-middle mb-0">
                                 <thead className="table-light text-muted small fw-bold">
                                     <tr>
@@ -172,8 +199,8 @@ function User() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.length > 0 ? (
-                                        users.map((item, index) => (
+                                    {filteredUsers.length > 0 ? (
+                                        filteredUsers.map((item, index) => (
                                             <tr key={index}>
                                                 <td>{item.name}</td>
                                                 <td>{item.usr}</td>
@@ -183,15 +210,18 @@ function User() {
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
+                                                  <div className="table-actions">
                                                     <button onClick={e => setUser(item)}
                                                      data-toggle="modal"
                                                      data-target="#modalUser"
-                                                     className="btn btn-outline-primary btn-sm me-1">
+                                                     className="btn btn-outline-primary btn-icon"
+                                                     title="แก้ไข" aria-label="แก้ไข">
                                                         <i className="fa-solid fa-pencil"></i>
                                                     </button>
-                                                    <button onClick={e => handleDelete(item)} className="btn btn-outline-danger btn-sm">
-                                                        <i className="fa-solid fa-trash"></i>
+                                                    <button onClick={e => handleDelete(item)} className="btn btn-outline-danger btn-icon" title="ลบ" aria-label="ลบ">
+                                                        <i className="fa-solid fa-trash-can"></i>
                                                     </button>
+                                                  </div>
                                                 </td>
                                             </tr>
                                         ))
@@ -211,24 +241,24 @@ function User() {
 
             <Modal id="modalUser" title="ผู้ใช้งานระบบ" modalSize="modal-lg">
                 <div>
-                    <label>ชื่อ</label>
-                    <input value={user.name || ''} onChange={e => setUser({ ...user, name: e.target.value })} className="form-control" />
+                    <label htmlFor="user-field-1">ชื่อ</label>
+                    <input id="user-field-1" value={user.name || ''} onChange={e => setUser({ ...user, name: e.target.value })} className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>username</label>
-                    <input value={user.usr || ''} onChange={e => setUser({ ...user, usr: e.target.value })} className="form-control" />
+                    <label htmlFor="user-field-2">username</label>
+                    <input id="user-field-2" value={user.usr || ''} onChange={e => setUser({ ...user, usr: e.target.value })} className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>password</label>
-                    <input value={password} onChange={e => setPassword(e.target.value)} type="password" className="form-control" />
+                    <label htmlFor="user-field-3">password</label>
+                    <input id="user-field-3" value={password} onChange={e => setPassword(e.target.value)} type="password" className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>ยืนยันรหัสผ่าน</label>
-                    <input value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} type="password" className="form-control" />
+                    <label htmlFor="user-field-4">ยืนยันรหัสผ่าน</label>
+                    <input id="user-field-4" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} type="password" className="form-control" />
                 </div>
                 <div className="mt-3">
-                    <label>ระดับสิทธิ์</label>
-                    <select
+                    <label htmlFor="user-field-5">ระดับสิทธิ์</label>
+                    <select id="user-field-5"
                         value={user.level}
                         onChange={e => setUser({ ...user, level: e.target.value })}
                         className="form-control" >
@@ -238,9 +268,9 @@ function User() {
                 </div>
 
                 <div className="mt-4 pt-2 border-top">
-                    <button onClick={handleSave} className="btn btn-primary px-4 shadow-sm">
+                    <button onClick={handleSave} disabled={isSaving} className="btn btn-primary px-4 shadow-sm">
                         <i className="fa-solid fa-check me-2"></i>
-                        Save
+                        บันทึก
                     </button>
                 </div>
             </Modal>

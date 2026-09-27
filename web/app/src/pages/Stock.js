@@ -1,18 +1,29 @@
 import Template from "../components/Template";
+import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
+import usePagedList from "../utils/usePagedList";
+import { SearchBox, Pagination } from "../components/ListToolbar";
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { closeModal } from "../utils/modal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
 import EmptyState from "../components/EmptyState";
-import * as dayjs from "dayjs";
 
 function Stock() {
   const [product, setProduct] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   const [productName, setProductName] = useState("");
   const [productId, setProductId] = useState(0);
   const [qty, setQty] = useState(1);
   const [stocks, setStocks] = useState([]);
+  const [productSearch, setProductSearch] = useState("");
+  const productKeyword = productSearch.trim().toLowerCase();
+  const productOptions = productKeyword
+    ? product.filter((p) => `${p.name} ${p.barcode}`.toLowerCase().includes(productKeyword))
+    : product;
+  const list = usePagedList(stocks, (s) => `${s.product?.name} ${s.product?.barcode}`);
 
   useEffect(() => {
     fetchDataStock();
@@ -30,7 +41,7 @@ function Stock() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -46,12 +57,12 @@ function Stock() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -61,11 +72,22 @@ function Stock() {
     setProductName(item.name);
     setProductId(item.id);
 
-    const btns = document.getElementsByClassName("btnClose");
-    for (let i = 0; i < btns.length; i++) btns[i].click();
+    closeModal();
   };
 
-  const handleSave = async () => {
+  // กันกดบันทึกซ้ำระหว่างรอ server
+  const handleSave = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveData(e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveData = async () => {
     try {
       const payload = {
         qty: qty,
@@ -96,12 +118,12 @@ function Stock() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -140,12 +162,12 @@ function Stock() {
               }
             })
             .catch((err) => {
-              throw err.response.data;
+              throw err;
             });
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message,
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -156,27 +178,25 @@ function Stock() {
   return (
     <>
       <Template>
-        {/* ปรับ Card ให้ดูพรีเมียมด้วย Shadow และขอบมน */}
+        <PageHeader
+          eyebrow="ร้านค้า / สต็อก"
+          title="รับสินค้าเข้าสต็อก"
+          description="เลือกสินค้า ระบุจำนวน แล้วบันทึกเพื่อเพิ่มยอดคงเหลือ"
+          count={`${list.filtered.length.toLocaleString("th-TH")} รายการ`}
+        />
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          <div className="card-header bg-white py-3 border-bottom border-light">
-            <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fa-solid fa-box-open me-2"></i>
-              รับสินค้าเข้าสต็อก
-            </div>
-          </div>
-
           <div className="card-body">
             {/* ส่วน Input ปรับให้ดูเป็นระเบียบด้วย Row Gap */}
             <div className="row g-3 align-items-end mb-4">
               <div className="col-md-4">
-                <label className="form-label small fw-bold text-muted">
+                <label htmlFor="stock-field-1" className="form-label small fw-bold text-muted">
                   สินค้าที่เลือก
                 </label>
                 <div className="input-group shadow-sm">
                   <span className="input-group-text bg-light text-muted">
                     <i className="fa-solid fa-tag"></i>
                   </span>
-                  <input
+                  <input id="stock-field-1"
                     disabled
                     value={productName}
                     className="form-control bg-white"
@@ -194,11 +214,11 @@ function Stock() {
               </div>
 
               <div className="col-md-2">
-                <label className="form-label small fw-bold text-muted">
+                <label htmlFor="stock-field-2" className="form-label small fw-bold text-muted">
                   จำนวนรับเข้า
                 </label>
                 <div className="input-group shadow-sm">
-                  <input
+                  <input id="stock-field-2"
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
                     type="number"
@@ -212,6 +232,7 @@ function Stock() {
               <div className="col-md-6">
                 <button
                   onClick={handleSave}
+                  disabled={isSaving}
                   className="btn btn-primary px-4 py-2 shadow-sm fw-bold rounded-3"
                 >
                   <i className="fa-solid fa-check me-2"></i>
@@ -220,12 +241,16 @@ function Stock() {
               </div>
             </div>
 
+            <FilterBar>
+              <SearchBox className="fb-search" value={list.search} onChange={list.setSearch} placeholder="ค้นหาชื่อสินค้าหรือบาร์โค้ด" />
+              {list.search && <FilterBarClear onClick={() => list.setSearch("")} />}
+            </FilterBar>
             {/* ตารางรายการสต็อก ปรับให้ดูอ่านง่ายสไตล์ Dashboard */}
             <div className="table-responsive rounded-3 border">
               <table className="table table-hover align-middle mb-0">
                 <thead className="table-light text-muted small fw-bold">
                   <tr className="small text-muted text-uppercase fw-bold">
-                    <th className="py-3 ps-3">Barcode</th>
+                    <th className="py-3 ps-3">บาร์โค้ด</th>
                     <th className="py-3">รายการสินค้า</th>
                     <th className="py-3 text-end">จำนวน</th>
                     <th className="py-3 text-center">วันที่รับเข้า</th>
@@ -235,8 +260,8 @@ function Stock() {
                   </tr>
                 </thead>
                 <tbody>
-                  {stocks.length > 0 ? (
-                    stocks.map((item, index) => (
+                  {list.pageItems.length > 0 ? (
+                    list.pageItems.map((item, index) => (
                       <tr key={index}>
                         <td className="ps-3 font-monospace small text-muted">
                           {item.product.barcode}
@@ -253,10 +278,11 @@ function Stock() {
                         <td className="text-center">
                           <button
                             onClick={(e) => handleDelete(item)}
-                            className="btn btn-outline-danger btn-sm rounded-pill px-3"
+                            className="btn btn-outline-danger btn-icon"
+                            title="ลบ"
+                            aria-label="ลบ"
                           >
-                            <i className="fa-solid fa-trash-alt me-1"></i>
-                            ลบ
+                            <i className="fa-solid fa-trash-can"></i>
                           </button>
                         </td>
                       </tr>
@@ -264,30 +290,35 @@ function Stock() {
                   ) : (
                     <tr>
                       <td colSpan="5">
-<EmptyState icon="fa-folder-open" text="ยังไม่มีข้อมูลการรับเข้าสต็อก" />
+<EmptyState icon="fa-folder-open" text={list.search ? "ไม่พบรายการที่ค้นหา" : "ยังไม่มีข้อมูลการรับเข้าสต็อก"} />
 </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+<Pagination page={list.page} totalPages={list.totalPages} total={list.filtered.length} onChange={list.setPage} />
             </div>
           </div>
         </div>
       </Template>
 
       <Modal id="modalProduct" title="เลือกสินค้า" modalSize="modal-lg">
+        <div className="mb-3">
+          <SearchBox value={productSearch} onChange={setProductSearch} placeholder="ค้นหาชื่อสินค้าหรือบาร์โค้ด" />
+        </div>
+        <div className="table-responsive">
         <table className="table table-hover align-middle mb-0">
           <thead className="table-light text-muted small fw-bold">
             <tr>
-              <th width="180px"></th>
-              <th width="150px">barcode</th>
+              <th width="180px"><span className="sr-only">เลือก</span></th>
+              <th width="150px">บาร์โค้ด</th>
               <th>รายการ</th>
             </tr>
           </thead>
           <tbody>
-            {product.length > 0
-              ? product.map((item) => (
-                  <tr>
+            {productOptions.length > 0
+              ? productOptions.map((item) => (
+                  <tr key={item.id}>
                     <td className="text-center">
                       <button
                         onClick={(e) => handleChooseProduct(item)}
@@ -304,6 +335,7 @@ function Stock() {
               : ""}
           </tbody>
         </table>
+        </div>
       </Modal>
     </>
   );

@@ -24,6 +24,6 @@ const BillSaleDetailModel = conn.define("billSaleDetails", {
   },
 });
 
-BillSaleDetailModel.sync({ alter: true});
+BillSaleDetailModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = BillSaleDetailModel;

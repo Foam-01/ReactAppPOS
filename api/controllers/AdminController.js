@@ -1,73 +1,82 @@
 const express = require("express");
-const app = express();
+const router = express.Router();
 const AdminModel = require("../models/AdminModel");
-const jwt = require("jsonwebtoken");
 const Service = require("./Service");
-const { where } = require("sequelize");
-const e = require("express");
 
-app.post("/admin/signin", async (req, res) => {
+const ADMIN_FIELDS = ["name", "usr", "level", "email"];
+
+// สร้าง payload จาก body เฉพาะฟิลด์ที่อนุญาต และ hash รหัสผ่านถ้ามี
+const buildAdminPayload = async (body) => {
+  const payload = Service.pick(body, ADMIN_FIELDS);
+  if (typeof body.pwd === "string" && body.pwd.length > 0) {
+    payload.pwd = await Service.hashPassword(body.pwd);
+  }
+  return payload;
+};
+
+router.post("/admin/signin", async (req, res) => {
   try {
-    const admin = await AdminModel.findOne({
-      where: {
-        usr: req.body.usr,
-        pwd: req.body.pwd,
-      },
-    });
-
-    if (admin != null) {
-      // ✅ แก้ไขตรงนี้ให้ดึง Secret ให้ถูกจุด
-      const secret = process.env.TOKEN_SECRET || process.env.secret || "mykey";
-      let token = jwt.sign({ id: admin.id }, secret);
-
-      return res.send({ token: token, message: "success" });
+    const { usr, pwd } = req.body || {};
+    if (typeof usr !== "string" || typeof pwd !== "string") {
+      return res.status(401).send({ message: "not found" });
     }
 
-    res.status(401).send({ message: "not found" });
+    const admin = await AdminModel.findOne({ where: { usr } });
+    const check = admin
+      ? await Service.checkPassword(pwd, admin.pwd)
+      : { ok: false };
+
+    if (!check.ok) {
+      return res.status(401).send({ message: "not found" });
+    }
+
+    if (check.needsRehash) {
+      await admin.update({ pwd: await Service.hashPassword(pwd) });
+    }
+
+    const token = Service.signToken(admin.id, "admin");
+    return res.send({ token: token, message: "success" });
   } catch (e) {
-    if (!res.headersSent) {
-      res.status(500).send({ message: e.message });
-    }
+    Service.sendError(res, e);
   }
 });
 
-app.get("/admin/info", Service.isLogin, async (req, res, next) => {
+router.get("/admin/info", Service.isAdmin, async (req, res) => {
   try {
-    const adminId = Service.getAdminId(req);
-    const admin = await AdminModel.findByPk(adminId, {
+    const admin = await AdminModel.findByPk(Service.getAdminId(req), {
       attributes: ["id", "name", "level", "usr"],
     });
 
     res.send({ result: admin, message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.post("/admin/create", Service.isLogin, async (req, res) => {
+router.post("/admin/create", Service.isAdmin, async (req, res) => {
   try {
-    await AdminModel.create(req.body);
+    if (typeof req.body.pwd !== "string" || !req.body.pwd) {
+      return res.status(400).send({ message: "กรุณาระบุรหัสผ่าน" });
+    }
+    await AdminModel.create(await buildAdminPayload(req.body));
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.get("/admin/list", Service.isLogin, async (req, res) => {
+router.get("/admin/list", Service.isAdmin, async (req, res) => {
   try {
     const results = await AdminModel.findAll({
       attributes: ["email", "name", "level", "usr", "id"],
     });
     res.send({ results: results, message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.delete("/admin/delete/:id", Service.isLogin, async (req, res) => {
+router.delete("/admin/delete/:id", Service.isAdmin, async (req, res) => {
   try {
     await AdminModel.destroy({
       where: {
@@ -77,14 +86,13 @@ app.delete("/admin/delete/:id", Service.isLogin, async (req, res) => {
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.post("/admin/edit/:id", Service.isLogin, async (req, res) => {
+router.post("/admin/edit/:id", Service.isAdmin, async (req, res) => {
   try {
-    await AdminModel.update(req.body, {
+    await AdminModel.update(await buildAdminPayload(req.body), {
       where: {
         id: req.params.id,
       },
@@ -92,24 +100,25 @@ app.post("/admin/edit/:id", Service.isLogin, async (req, res) => {
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.post("/admin/ChangeProfile", Service.isLogin, async (req, res) => {
+// แก้ได้เฉพาะโปรไฟล์ของตัวเอง (ใช้ id จาก token ไม่ใช่จาก body) และห้ามเปลี่ยน level เอง
+router.post("/admin/ChangeProfile", Service.isAdmin, async (req, res) => {
   try {
-    await AdminModel.update(req.body, {
+    const payload = await buildAdminPayload(req.body);
+    delete payload.level;
+    await AdminModel.update(payload, {
       where: {
-        id: req.body.id,
+        id: Service.getAdminId(req),
       },
     });
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-module.exports = app;
+module.exports = router;

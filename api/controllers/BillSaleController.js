@@ -1,94 +1,110 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const app = express();
-require("dotenv").config();
+const router = express.Router();
 const service = require("./Service");
+const ProductModel = require("../models/ProductModel");
 
 const BillSaleModel = require("../models/BillSaleModel");
 const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-const { where, Sequelize } = require("sequelize");
+const { Op } = require("sequelize");
+const { BILL_STATUS } = require("../constants");
+const conn = require("../connect");
 
-app.get("/billSale/openBill", service.isLogin, async (req, res) => {
+// ให้คำขอของร้านเดียวกันทำงานทีละคำขอ (กดซ้ำ/หลายเครื่องพร้อมกัน)
+// กันบิลเปิดซ้ำ, รายการซ้ำ และ qty หาย (lost update) โดยไม่ต้องแก้ schema
+// advisory lock ระดับ transaction: ปลดเองเมื่อ COMMIT/ROLLBACK
+const withMemberLock = (memberId, work) =>
+  conn.transaction(async (t) => {
+    await conn.query("SELECT pg_advisory_xact_lock(:key)", {
+      replacements: { key: memberId },
+      transaction: t,
+    });
+    return work(t);
+  });
+
+router.get("/billSale/openBill", service.isMember, async (req, res) => {
   try {
     const payload = {
       userId: service.getMemberId(req),
-      status: "open",
+      status: BILL_STATUS.OPEN,
     };
-    let result = await BillSaleModel.findOne({
-      where: payload,
+    const result = await withMemberLock(payload.userId, async (t) => {
+      const bill = await BillSaleModel.findOne({
+        where: payload,
+        transaction: t,
+      });
+      return bill || BillSaleModel.create(payload, { transaction: t });
     });
-
-    if (result == null) {
-      result = await BillSaleModel.create(payload);
-    }
 
     res.send({ message: "success", result: result });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.post("/billSele/sele", service.isLogin, async (req, res) => {
+router.post("/billSele/sele", service.isMember, async (req, res) => {
   try {
     const payload = {
       userId: service.getMemberId(req),
-      status: "open",
+      status: BILL_STATUS.OPEN,
     };
 
-    const currentBill = await BillSaleModel.findOne({
-      where: payload,
+    // ใช้ราคาจากฐานข้อมูล ไม่เชื่อราคาที่ client ส่งมา และต้องเป็นสินค้าของร้านนี้
+    const product = await ProductModel.findOne({
+      where: { id: req.body.id, userId: payload.userId },
+      attributes: ["id", "price"],
     });
+    if (!product) {
+      return res.status(404).send({ message: "ไม่พบสินค้า" });
+    }
 
-    const item = {
-      price: req.body.price,
-      productId: req.body.id,
-      billSaleId: currentBill.id,
-      userId: payload.userId,
-    };
-
-    const billSaleDetail = await BillSaleDetailModel.findOne({
-      where: item,
-    });
-
-    if (billSaleDetail == null) {
-      item.qty = 1;
-
-      // 🔥 [จุดแก้ไข] สั่งลบคีย์ id ออกจาก object ทิ้งอย่างเด็ดขาด ป้องกันบั๊ก null value
-      delete item.id;
-
-      await BillSaleDetailModel.create(item);
-    } else {
-      item.qty = parseInt(billSaleDetail.qty) + 1;
-
-      // 🔥 [จุดแก้ไข] กันเหนียวฝั่ง update ด้วย สั่งลบคีย์ id ออกเช่นกัน
-      delete item.id;
-
-      await BillSaleDetailModel.update(item, {
-        where: {
-          id: billSaleDetail.id,
-        },
+    const added = await withMemberLock(payload.userId, async (t) => {
+      const currentBill = await BillSaleModel.findOne({
+        where: payload,
+        transaction: t,
       });
+      if (!currentBill) return false;
+
+      const item = {
+        price: product.price,
+        productId: product.id,
+        billSaleId: currentBill.id,
+        userId: payload.userId,
+      };
+
+      const billSaleDetail = await BillSaleDetailModel.findOne({
+        where: item,
+        transaction: t,
+      });
+
+      if (billSaleDetail == null) {
+        await BillSaleDetailModel.create({ ...item, qty: 1 }, { transaction: t });
+      } else {
+        // บวกที่ฐานข้อมูล (qty = qty + 1) ไม่ใช้ค่าที่อ่านมา
+        await BillSaleDetailModel.increment("qty", {
+          by: 1,
+          where: { id: billSaleDetail.id },
+          transaction: t,
+        });
+      }
+      return true;
+    });
+
+    if (!added) {
+      return res.status(400).send({ message: "ไม่พบบิลที่เปิดอยู่" });
     }
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get("/billSale/currentBillInfo", service.isLogin, async (req, res) => {
+router.get("/billSale/currentBillInfo", service.isMember, async (req, res) => {
   try {
-    const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-    const ProductModel = require("../models/ProductModel");
-
-    BillSaleModel.hasMany(BillSaleDetailModel);
-    BillSaleDetailModel.belongsTo(ProductModel);
-
+    
     const results = await BillSaleModel.findOne({
       where: {
-        status: "open",
+        status: BILL_STATUS.OPEN,
         userId: service.getMemberId(req),
       },
       include: {
@@ -102,54 +118,37 @@ app.get("/billSale/currentBillInfo", service.isLogin, async (req, res) => {
     });
     res.send({ message: "success", results: results });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.delete("/billSale/deleteItem/:id", service.isLogin, async (req, res) => {
+router.delete("/billSale/deleteItem/:id", service.isMember, async (req, res) => {
   try {
     await BillSaleDetailModel.destroy({
       where: {
         id: req.params.id,
+        userId: service.getMemberId(req),
       },
     });
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.post("/billSale/updateQty", service.isLogin, async (req, res) => {
+router.post("/billSale/updateQty", service.isMember, async (req, res) => {
   try {
+    const qty = service.toPositiveInt(req.body.qty);
+    if (!qty) {
+      return res.status(400).send({ message: "จำนวนไม่ถูกต้อง" });
+    }
     await BillSaleDetailModel.update(
       {
-        qty: req.body.qty,
+        qty: qty,
       },
       {
         where: {
           id: req.body.id,
-        },
-      },
-    );
-
-    res.send({ message: "success" });
-  } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
-  }
-});
-
-app.get("/billSale/endSale", service.isLogin, async (req, res) => {
-  try {
-    await BillSaleModel.update(
-      {
-        status: "pay",
-      },
-      {
-        where: {
-          status: "open",
           userId: service.getMemberId(req),
         },
       },
@@ -157,22 +156,56 @@ app.get("/billSale/endSale", service.isLogin, async (req, res) => {
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get("/billSale/lastBill", service.isLogin, async (req, res) => {
+router.get("/billSale/endSale", service.isMember, async (req, res) => {
   try {
-    const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-    const ProductModel = require("../models/ProductModel");
+    // กันบิลว่าง: ต้องมีสินค้าในบิลที่เปิดอยู่อย่างน้อย 1 รายการก่อนปิดการขาย
+    const memberId = service.getMemberId(req);
+    // ล็อกเดียวกับการเพิ่มสินค้า: ไม่มีสินค้าเข้าบิลระหว่างที่กำลังปิดบิล
+    const closed = await withMemberLock(memberId, async (t) => {
+      const openBills = await BillSaleModel.findAll({
+        attributes: ["id"],
+        where: { status: BILL_STATUS.OPEN, userId: memberId },
+        transaction: t,
+      });
+      const itemCount = openBills.length
+        ? await BillSaleDetailModel.count({
+            where: { billSaleId: openBills.map((b) => b.id) },
+            transaction: t,
+          })
+        : 0;
+      if (itemCount === 0) return false;
 
-    BillSaleModel.hasMany(BillSaleDetailModel);
-    BillSaleDetailModel.belongsTo(ProductModel);
+      await BillSaleModel.update(
+        // payDate: เวลาชำระจริง (เดิมคอลัมน์นี้ไม่เคยถูกบันทึก)
+        { status: BILL_STATUS.PAY, payDate: new Date() },
+        {
+          where: { status: BILL_STATUS.OPEN, userId: memberId },
+          transaction: t,
+        },
+      );
+      return true;
+    });
 
+    if (!closed) {
+      return res.status(400).send({ message: "ไม่มีสินค้าในบิล" });
+    }
+
+    res.send({ message: "success" });
+  } catch (e) {
+    service.sendError(res, e);
+  }
+});
+
+router.get("/billSale/lastBill", service.isMember, async (req, res) => {
+  try {
+    
     const result = await BillSaleModel.findAll({
       where: {
-        status: "pay",
+        status: BILL_STATUS.PAY,
         userId: service.getMemberId(req),
       },
       order: [["id", "DESC"]],
@@ -189,31 +222,23 @@ app.get("/billSale/lastBill", service.isLogin, async (req, res) => {
 
     res.send({ message: "success", result: result });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get("/billSale/billToday", service.isLogin, async (req, res) => {
+router.get("/billSale/billToday", service.isMember, async (req, res) => {
   try {
-    const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-    const ProductModel = require("../models/ProductModel");
-
-    BillSaleModel.hasMany(BillSaleDetailModel);
-    BillSaleDetailModel.belongsTo(ProductModel);
-
+    
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
 
     const now = new Date();
     now.setHours(23, 59, 59, 59);
 
-    const { Sequelize } = require("sequelize");
-    const Op = Sequelize.Op;
 
     const results = await BillSaleModel.findAll({
       where: {
-        status: "pay",
+        status: BILL_STATUS.PAY,
         userId: service.getMemberId(req),
         // เปลี่ยนจาก createdAt เป็น updatedAt
         updatedAt: {
@@ -227,6 +252,7 @@ app.get("/billSale/billToday", service.isLogin, async (req, res) => {
 
       include: {
         model: BillSaleDetailModel,
+        required: true, // ซ่อนบิลว่าง (ไม่มีรายการสินค้า) จากรายงาน
         attributes: ["qty", "price"],
         include: {
           model: ProductModel,
@@ -237,27 +263,22 @@ app.get("/billSale/billToday", service.isLogin, async (req, res) => {
 
     res.send({ message: "success", results: results });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get("/billSale/list", service.isLogin, async (req, res) => {
-  const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-  const ProductModel = require("../models/ProductModel");
-
-  BillSaleModel.hasMany(BillSaleDetailModel);
-  BillSaleDetailModel.belongsTo(ProductModel);
-
+router.get("/billSale/list", service.isMember, async (req, res) => {
+  
   try {
     const results = await BillSaleModel.findAll({
       order: [["id", "DESC"]],
       where: {
-        status: "pay",
+        status: BILL_STATUS.PAY,
         userId: service.getMemberId(req),
       },
       include: {
         model: BillSaleDetailModel,
+        required: true, // ซ่อนบิลว่าง (ไม่มีรายการสินค้า) จากรายงาน
         include: {
           model: ProductModel,
         },
@@ -266,77 +287,78 @@ app.get("/billSale/list", service.isLogin, async (req, res) => {
 
     res.send({ message: "success", results: results });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get(
+router.get(
   "/billSale/listByYearAndMonth/:year/:month",
-  service.isLogin,
+  service.isMember,
   async (req, res) => {
     try {
-      const { Sequelize, Op } = require("sequelize");
-      const BillSaleDetailModel = require("../models/BillSaleDetailModel");
-      const ProductModel = require("../models/ProductModel");
-
-      // ตรวจสอบ Association
-      BillSaleModel.hasMany(BillSaleDetailModel);
-      BillSaleDetailModel.belongsTo(ProductModel);
-
+      
       let arr = [];
       let y = parseInt(req.params.year);
       let m = parseInt(req.params.month);
+      if (!(y >= 2000 && y <= 2100 && m >= 1 && m <= 12)) {
+        return res.status(400).send({ message: "ปี/เดือนไม่ถูกต้อง" });
+      }
       let daysInMonth = new Date(y, m, 0).getDate();
 
-      for (let i = 1; i <= daysInMonth; i++) {
-        // สร้างช่วงเวลาเริ่มต้นและสิ้นสุดของวันนั้นๆ เพื่อใช้แทน EXTRACT ที่มักมีปัญหา
-        const startDate = new Date(y, m - 1, i, 0, 0, 0);
-        const endDate = new Date(y, m - 1, i, 23, 59, 59);
-
-        const results = await BillSaleModel.findAll({
-          where: {
-            userId: service.getMemberId(req), // กรองเฉพาะของผู้ใช้งานนั้นๆ
-            status: "pay",
-            createdAt: {
-              [Op.between]: [startDate, endDate], // ใช้ Op ที่ปลอดภัยกว่า
-            },
+      // ดึงทั้งเดือนใน query เดียว แล้วแยกรายวันใน JS (เดิม query วันละครั้ง = 28–31 ครั้ง)
+      const results = await BillSaleModel.findAll({
+        where: {
+          userId: service.getMemberId(req), // กรองเฉพาะของผู้ใช้งานนั้นๆ
+          status: BILL_STATUS.PAY,
+          createdAt: {
+            [Op.between]: [
+              new Date(y, m - 1, 1, 0, 0, 0),
+              new Date(y, m - 1, daysInMonth, 23, 59, 59),
+            ],
           },
+        },
+        order: [["id", "ASC"]],
+        include: {
+          model: BillSaleDetailModel,
+          required: true, // ซ่อนบิลว่าง (ไม่มีรายการสินค้า) จากรายงาน
           include: {
-            model: BillSaleDetailModel,
-            include: {
-              model: ProductModel,
-            },
+            model: ProductModel,
           },
-        });
+        },
+      });
 
-        let sum = 0;
-        for (let j = 0; j < results.length; j++) {
-          const result = results[j];
+      for (let i = 1; i <= daysInMonth; i++) {
+        arr.push({ day: i, results: [], sum: 0 });
+      }
 
-          // แก้จุดที่ผิด: เปลี่ยนจาก billSaleDetail เป็น billSaleDetails (เติม s)
-          // และเพิ่มเงื่อนไขเช็คว่ามีข้อมูลหรือไม่
-          if (result.billSaleDetails && result.billSaleDetails.length > 0) {
-            for (let k = 0; k < result.billSaleDetails.length; k++) {
-              const item = result.billSaleDetails[k];
-              sum += parseInt(item.qty) * parseInt(item.price);
-            }
+      for (const result of results) {
+        const d = new Date(result.createdAt);
+        // ช่วงเดิมของแต่ละวันคือ 00:00:00 ถึง 23:59:59 (ไม่รวมเศษมิลลิวินาทีหลัง 23:59:59)
+        if (
+          d.getHours() === 23 &&
+          d.getMinutes() === 59 &&
+          d.getSeconds() === 59 &&
+          d.getMilliseconds() > 0
+        ) {
+          continue;
+        }
+        const day = arr[d.getDate() - 1];
+        day.results.push(result);
+
+        // แก้จุดที่ผิด: เปลี่ยนจาก billSaleDetail เป็น billSaleDetails (เติม s)
+        // และเพิ่มเงื่อนไขเช็คว่ามีข้อมูลหรือไม่
+        if (result.billSaleDetails && result.billSaleDetails.length > 0) {
+          for (const item of result.billSaleDetails) {
+            day.sum += parseInt(item.qty) * parseInt(item.price);
           }
         }
-
-        arr.push({
-          day: i,
-          results: results,
-          sum: sum,
-        });
       }
 
       res.send({ message: "success", results: arr });
     } catch (e) {
-      res.statusCode = 500;
-      res.send({ message: e.message });
+      service.sendError(res, e);
     }
   },
 );
 
-module.exports = app;
+module.exports = router;

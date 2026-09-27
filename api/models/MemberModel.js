@@ -22,5 +22,5 @@ const MemberModel = conn.define("members", {
   },
 });
 // หากสร้างตารางมาแล้ว ให้ปิดเอาไว้
-MemberModel.sync({ alter: true });
+MemberModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 module.exports = MemberModel;

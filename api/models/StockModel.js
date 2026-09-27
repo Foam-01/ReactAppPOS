@@ -17,6 +17,6 @@ const StockModel = conn.define("stocks", {
   },
 });
 
-StockModel.sync({ alter: true });
+StockModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = StockModel;

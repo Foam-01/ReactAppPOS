@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "./utils/swal";
+import { getErrorMessage } from "./utils/error";
 import config from "./config";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -39,8 +40,8 @@ function App() {
       // 🚩 ถ้าใส่รหัสผิด Backend ส่ง 401 จะตกลงมาที่ catch ทันที
       let errorMessage = "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง";
 
-      if (e.response && e.response.status !== 401) {
-        errorMessage = e.response.data.message || e.message;
+      if (!e.response || e.response.status !== 401) {
+        errorMessage = getErrorMessage(e);
       }
 
       Swal.fire({
@@ -78,14 +79,14 @@ function App() {
           <form>
             {/* Username - กลับมาใช้ Input Group พร้อม Icon */}
             <div className="mb-3">
-              <label className="form-label small fw-bold text-muted">
+              <label htmlFor="app-field-1" className="form-label small fw-bold text-muted">
                 USERNAME
               </label>
               <div className="input-group shadow-sm">
                 <span className="input-group-text bg-white border-end-0 text-muted px-3">
                   <i className="fa-solid fa-user"></i>
                 </span>
-                <input
+                <input id="app-field-1"
                   onChange={(e) => setUsr(e.target.value)}
                   className="form-control border-start-0 ps-0 py-2"
                   placeholder="ระบุชื่อผู้ใช้งาน"
@@ -96,14 +97,14 @@ function App() {
 
             {/* Password */}
             <div className="mb-4">
-              <label className="form-label small fw-bold text-muted">
+              <label htmlFor="app-field-2" className="form-label small fw-bold text-muted">
                 PASSWORD
               </label>
               <div className="input-group shadow-sm">
                 <span className="input-group-text bg-white border-end-0 text-muted px-3">
                   <i className="fa-solid fa-key"></i>
                 </span>
-                <input
+                <input id="app-field-2"
                   onChange={(e) => setPwd(e.target.value)}
                   className="form-control border-start-0 ps-0 py-2"
                   type="password"

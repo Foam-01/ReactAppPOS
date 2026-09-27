@@ -1,48 +1,74 @@
 const express = require("express");
 const Service = require("./Service");
-const app = express();
-const ProductImageModel = require("../models/ProductlmageModel");
+const router = express.Router();
+const ProductImageModel = require("../models/ProductImageModel");
+const ProductModel = require("../models/ProductModel");
 const fileUpload = require("express-fileupload");
+const crypto = require("crypto");
 const fs = require("fs");
+const path = require("path");
 
-app.use(fileUpload());
+const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-app.post("/productImage/insert", Service.isLogin, async (req, res) => {
+// ตรวจชนิดไฟล์จากเนื้อไฟล์จริง (magic bytes) ไม่เชื่อชื่อไฟล์หรือ mimetype จาก client
+const detectImageExt = (buf) => {
+  if (!buf || buf.length < 12) return null;
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  if (
+    buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47
+  ) {
+    return "png";
+  }
+  if (
+    buf.toString("ascii", 0, 4) === "RIFF" &&
+    buf.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return "webp";
+  }
+  if (buf.toString("ascii", 0, 3) === "GIF") return "gif";
+  return null;
+};
+
+// ตรวจว่าสินค้าเป็นของ member ที่ login อยู่
+const ownsProduct = async (req, productId) => {
+  if (!Service.toPositiveInt(productId)) return false;
+  const product = await ProductModel.findOne({
+    where: { id: productId, userId: Service.getMemberId(req) },
+    attributes: ["id"],
+  });
+  return product !== null;
+};
+
+router.use(
+  "/productImage",
+  fileUpload({
+    limits: { fileSize: MAX_FILE_SIZE, files: 1 },
+    abortOnLimit: true,
+    responseOnLimit: JSON.stringify({ message: "ไฟล์ใหญ่เกิน 5MB" }),
+  }),
+);
+
+router.post("/productImage/insert", Service.isMember, async (req, res) => {
   try {
-    const myDate = new Date();
-    const y = myDate.getFullYear();
-    const m = myDate.getMonth() + 1;
-    const d = myDate.getDate();
-    const h = myDate.getHours();
-    const mm = myDate.getMinutes();
-    const s = myDate.getSeconds();
-    const ms = myDate.getMilliseconds();
+    const productImage = req.files && req.files.productImage;
+    if (!productImage || Array.isArray(productImage)) {
+      return res.status(400).send({ message: "กรุณาเลือกไฟล์รูปภาพ" });
+    }
 
-    const productImage = req.files.productImage;
-    const random = Math.random() * 1000;
-    const newName =
-      y +
-      "-" +
-      m +
-      "-" +
-      d +
-      "-" +
-      h +
-      "-" +
-      mm +
-      "-" +
-      s +
-      "-" +
-      ms +
-      "-" +
-      random;
-    const arr = productImage.name.split("-");
-    const ext = arr[arr.length - 1];
-    const fullNewName = newName + "-" + ext;
+    if (!(await ownsProduct(req, req.body.productId))) {
+      return res.status(403).send({ message: "forbidden" });
+    }
 
-    const uploadPath = __dirname + "/../uploads/" + fullNewName;
+    const ext = detectImageExt(productImage.data);
+    if (!ext) {
+      return res
+        .status(400)
+        .send({ message: "รองรับเฉพาะไฟล์ jpg, png, webp, gif" });
+    }
 
-    await productImage.mv(uploadPath);
+    const fullNewName = crypto.randomUUID() + "." + ext;
+    await productImage.mv(path.join(UPLOAD_DIR, fullNewName));
 
     await ProductImageModel.create({
       isMain: false,
@@ -52,13 +78,15 @@ app.post("/productImage/insert", Service.isLogin, async (req, res) => {
 
     res.send({ message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.get("/productImage/list/:productId", Service.isLogin, async (req, res) => {
+router.get("/productImage/list/:productId", Service.isMember, async (req, res) => {
   try {
+    if (!(await ownsProduct(req, req.params.productId))) {
+      return res.status(403).send({ message: "forbidden" });
+    }
     const results = await ProductImageModel.findAll({
       where: {
         productId: req.params.productId,
@@ -67,45 +95,43 @@ app.get("/productImage/list/:productId", Service.isLogin, async (req, res) => {
     });
     res.send({ message: "success", results: results });
   } catch (e) {
-    res.statusCode = 500;
-    res.send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.delete("/productImage/delete/:id", Service.isLogin, async (req, res) => {
+router.delete("/productImage/delete/:id", Service.isMember, async (req, res) => {
   try {
-    // 1. หาข้อมูลก่อน
     const row = await ProductImageModel.findByPk(req.params.id);
 
-    if (!row) {
+    if (!row || !(await ownsProduct(req, row.productId))) {
       return res.status(404).send({ message: "ไม่พบข้อมูลรูปภาพ" });
     }
 
-    const imageName = row.imageName;
-    // ใช้ path.join เพื่อให้ Path แม่นยำที่สุด (ต้อง import path from 'path')
-    const filePath = `./uploads/${imageName}`;
-
-    // 2. ลบไฟล์จริงออกก่อน (เช็คก่อนว่ามีไฟล์ไหม เพื่อไม่ให้ระบบค้าง)
-    if (fs.existsSync(filePath)) {
+    // กัน path traversal: ใช้เฉพาะชื่อไฟล์ และต้องอยู่ในโฟลเดอร์ uploads
+    const filePath = path.join(UPLOAD_DIR, path.basename(row.imageName));
+    if (filePath.startsWith(UPLOAD_DIR + path.sep) && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // 3. ลบข้อมูลใน Database
     await ProductImageModel.destroy({
-      where: { id: req.params.id },
+      where: { id: row.id },
     });
 
     res.send({ message: "success" });
   } catch (e) {
-    res.status(500).send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.get(
+router.get(
   "/productImage/chooseMainImage/:id/:productId",
-  Service.isLogin,
+  Service.isMember,
   async (req, res) => {
     try {
+      if (!(await ownsProduct(req, req.params.productId))) {
+        return res.status(403).send({ message: "forbidden" });
+      }
+
       await ProductImageModel.update(
         {
           isMain: false,
@@ -124,16 +150,16 @@ app.get(
         {
           where: {
             id: req.params.id,
+            productId: req.params.productId,
           },
         },
       );
 
       res.send({ message: "success" });
     } catch (e) {
-      res.statusCode = 500;
-      res.send({ message: e.message });
+      Service.sendError(res, e);
     }
   },
 );
 
-module.exports = app;
+module.exports = router;

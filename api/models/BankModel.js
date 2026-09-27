@@ -20,6 +20,6 @@ const BankModel = conn.define("banks", {
   },
 });
 
-BankModel.sync({ alter: true});
+BankModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = BankModel; 

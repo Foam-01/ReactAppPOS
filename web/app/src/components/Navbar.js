@@ -1,5 +1,6 @@
 import config from "../config";
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import { useNavigate } from "react-router-dom";
 import Modal from './Modal'
 import { useState } from "react";
@@ -38,13 +39,13 @@ function Navbar() {
          
       }
       
-    }) . catch (err => {
-      throw err.response.data;
+    }).catch(err => {
+      throw err;
     })
     } catch (e) {
       Swal.fire({
         title: 'เกิดข้อผิดพลาด',
-        text: e.message,
+        text: getErrorMessage(e),
         icon: 'error'
       })
     }
@@ -68,7 +69,7 @@ function Navbar() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -79,14 +80,14 @@ function Navbar() {
       <nav className="main-header navbar navbar-expand navbar-white navbar-light">
         <ul className="navbar-nav">
           <li className="nav-item">
-            <a
-              className="nav-link"
+            <button
+              type="button"
+              className="nav-link btn btn-link"
               data-widget="pushmenu"
-              href="#"
-              role="button"
+              aria-label="เปิด/ปิดเมนู"
             >
-              <i className="fa-solid fa-bars"></i>
-            </a>
+              <i className="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
           </li>
         </ul>
 
@@ -94,15 +95,15 @@ function Navbar() {
           <li className="nav-item d-flex align-items-center">
             {/* ปุ่ม Profile: แก้ btb เป็น btn และ btn-infoo เป็น btn-info */}
             <button onClick={handleEditProfile} data-toggle='modal' data-target='#modalEditProfile' 
-              className="btn btn-info btn-sm mr-2 text-white">
-              <i className="fa-solid fa-user mr-2"></i>
-              Profile
+              className="btn btn-info btn-sm mr-2 text-white" aria-label="แก้ไขข้อมูลร้าน">
+              <i className="fa-solid fa-user mr-sm-2" aria-hidden="true"></i>
+              <span className="d-none d-sm-inline">Profile</span>
             </button>
 
             {/* ปุ่ม Sign Out: เพิ่ม btn-sm เพื่อให้ขนาดเท่ากันกับปุ่มข้างๆ */}
-            <button onClick={handleSignOut} className="btn btn-danger btn-sm">
-              <i className="fa-solid fa-times mr-2"></i>
-              ออกจากระบบ
+            <button onClick={handleSignOut} className="btn btn-danger btn-sm" aria-label="ออกจากระบบ">
+              <i className="fa-solid fa-times mr-sm-2" aria-hidden="true"></i>
+              <span className="d-none d-sm-inline">ออกจากระบบ</span>
             </button>
           </li>
 
@@ -112,8 +113,8 @@ function Navbar() {
 
       <Modal  id='modalEditProfile' title='แก้ไขข้อมูลร้านของฉัน'>
         <div>
-          <label>ชื่อร้าน</label>
-          <input value={memberName} onChange={e => setMemberName(e.target.value)} className="form-control" />
+          <label htmlFor="navbar-field-1">ชื่อร้าน</label>
+          <input id="navbar-field-1" value={memberName} onChange={e => setMemberName(e.target.value)} className="form-control" />
         </div>
         <div className="mt-3">
               <button onClick={handleChangeProfile} className="btn btn-primary">

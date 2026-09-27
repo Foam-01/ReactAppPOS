@@ -1,12 +1,15 @@
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import Template from "./Template";
+import { SearchBox } from "../components/ListToolbar";
+import { PageHeader, FilterBar, FilterBarButton, FilterBarClear } from "../components/PageHeader";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 
 function Admin() {
-  const [level, setLevel] = useState(() => {
+  const [level] = useState(() => {
     return ["admin", "sub admin"];
   });
   const [selectedLevel, setSelectedLevel] = useState("admin");
@@ -16,6 +19,7 @@ function Admin() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
   const [admin, setAdmin] = useState([]);
+  const [search, setSearch] = useState("");
   const [id, setId] = useState(0);
 
   useEffect(() => {
@@ -32,12 +36,12 @@ function Admin() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -108,7 +112,7 @@ function Admin() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -162,7 +166,7 @@ function Admin() {
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -178,49 +182,38 @@ function Admin() {
     setId(item.id);
   };
 
+  // ค้นหาฝั่งหน้าเว็บจากรายการที่โหลดแล้ว
+  const keyword = search.trim().toLowerCase();
+  const filtered = keyword
+    ? admin.filter((item) => `${item.name} ${item.usr} ${item.email}`.toLowerCase().includes(keyword))
+    : admin;
+
   return (
     <>
       <Template>
         <div className="p-4 bg-light min-vh-100">
-          <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-            {/* Card Header แบบพรีเมียม */}
-            <div className="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <div
-                  className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-                  style={{ width: "50px", height: "50px" }}
-                >
-                  <i className="fa-solid fa-users-cog fs-5"></i>
-                </div>
-                <div>
-                  <h5
-                    className="mb-1 fw-bold text-dark"
-                    style={{ letterSpacing: "0.5px" }}
-                  >
-                    ผู้ใช้ระบบ (Admin)
-                  </h5>
-                  <small className="text-muted fw-medium">
-                    จัดการข้อมูลผู้ดูแลระบบและกำหนดสิทธิ์การใช้งาน
-                  </small>
-                </div>
-              </div>
-
-              {/* ย้ายปุ่มเพิ่มรายการมาไว้มุมขวาบน */}
-              <button
+          <PageHeader
+            eyebrow="ตั้งค่า / ผู้ใช้ระบบ"
+            title="ผู้ใช้ระบบ (Admin)"
+            description="จัดการบัญชีผู้ดูแลระบบและกำหนดระดับสิทธิ์การใช้งาน"
+            count={`${filtered.length.toLocaleString("th-TH")} คน`}
+          />
+          <FilterBar
+            actions={
+              <FilterBarButton
+                variant="primary"
+                icon="fa-solid fa-plus"
                 data-bs-toggle="modal"
                 data-bs-target="#modalForm"
-                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm btn-hover-scale"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)",
-                  border: "none",
-                }}
               >
-                <i className="fa-solid fa-plus me-2"></i>
                 เพิ่มผู้ใช้ใหม่
-              </button>
-            </div>
-
+              </FilterBarButton>
+            }
+          >
+            <SearchBox className="fb-search" value={search} onChange={setSearch} placeholder="ค้นหาชื่อ Username หรืออีเมล" />
+            {search && <FilterBarClear onClick={() => setSearch("")} />}
+          </FilterBar>
+          <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
             {/* Card Body: ตาราง */}
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -264,8 +257,8 @@ function Admin() {
                     </tr>
                   </thead>
                   <tbody className="border-top-0 bg-white">
-                    {admin.length > 0 ? (
-                      admin.map((item, index) => (
+                    {filtered.length > 0 ? (
+                      filtered.map((item, index) => (
                         <tr key={index}>
                           <td className="ps-4 py-3">
                             <div className="d-flex align-items-center">
@@ -302,22 +295,26 @@ function Admin() {
                             {item.email || "-"}
                           </td>
                           <td className="pe-4 py-3 text-center">
+                            <div className="table-actions">
                             <button
                               onClick={(e) => handleSelectedAdmin(item)}
                               data-bs-toggle="modal"
                               data-bs-target="#modalForm"
-                              className="btn btn-light btn-sm rounded-circle me-2 btn-action text-warning border shadow-sm"
+                              className="btn btn-outline-primary btn-icon"
                               title="แก้ไข"
+                              aria-label="แก้ไข"
                             >
                               <i className="fa-solid fa-pencil"></i>
                             </button>
                             <button
                               onClick={(e) => handleDelete(item)}
-                              className="btn btn-light btn-sm rounded-circle btn-action text-danger border shadow-sm"
+                              className="btn btn-outline-danger btn-icon"
                               title="ลบ"
+                              aria-label="ลบ"
                             >
                               <i className="fa-solid fa-trash-can"></i>
                             </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -377,12 +374,12 @@ function Admin() {
               </h6>
 
               <div className="mb-3">
-                <label className="form-label-custom">ชื่อ - นามสกุล</label>
+                <label htmlFor="admin-field-1" className="form-label-custom">ชื่อ - นามสกุล</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-regular fa-user text-muted"></i>
                   </span>
-                  <input
+                  <input id="admin-field-1"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     type="text"
@@ -393,12 +390,12 @@ function Admin() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label-custom">อีเมล</label>
+                <label htmlFor="admin-field-2" className="form-label-custom">อีเมล</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-regular fa-envelope text-muted"></i>
                   </span>
-                  <input
+                  <input id="admin-field-2"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
@@ -409,12 +406,12 @@ function Admin() {
               </div>
 
               <div>
-                <label className="form-label-custom">ระดับสิทธิ์</label>
+                <label htmlFor="admin-field-3" className="form-label-custom">ระดับสิทธิ์</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-solid fa-sitemap text-muted"></i>
                   </span>
-                  <select
+                  <select id="admin-field-3"
                     value={selectedLevel}
                     onChange={(e) => setSelectedLevel(e.target.value)}
                     className="form-select form-control-custom border-start-0 ps-0"
@@ -437,12 +434,12 @@ function Admin() {
               </h6>
 
               <div className="mb-3">
-                <label className="form-label-custom">Username</label>
+                <label htmlFor="admin-field-4" className="form-label-custom">Username</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-solid fa-at text-muted"></i>
                   </span>
-                  <input
+                  <input id="admin-field-4"
                     value={user}
                     onChange={(e) => setUser(e.target.value)}
                     type="text"
@@ -453,12 +450,12 @@ function Admin() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label-custom">Password</label>
+                <label htmlFor="admin-field-5" className="form-label-custom">Password</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-solid fa-key text-muted"></i>
                   </span>
-                  <input
+                  <input id="admin-field-5"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
@@ -469,12 +466,12 @@ function Admin() {
               </div>
 
               <div>
-                <label className="form-label-custom">Confirm Password</label>
+                <label htmlFor="admin-field-6" className="form-label-custom">Confirm Password</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
                     <i className="fa-solid fa-shield-check text-muted"></i>
                   </span>
-                  <input
+                  <input id="admin-field-6"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     type="password"

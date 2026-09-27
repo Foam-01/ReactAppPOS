@@ -1,4 +1,3 @@
-const e = require("cors");
 const conn = require("../connect");
 const { DataTypes } = require("sequelize");
 const AdminModel = conn.define("admins", {
@@ -24,6 +23,6 @@ const AdminModel = conn.define("admins", {
   },
 });
 
-AdminModel.sync({ alter: true });
+AdminModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = AdminModel;

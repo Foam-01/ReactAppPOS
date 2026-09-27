@@ -1,46 +1,40 @@
 const express = require("express");
 const MemberModel = require("../models/MemberModel");
-const jwt = require("jsonwebtoken");
-const app = express();
-require("dotenv").config();
+const router = express.Router();
 const service = require("./Service");
 const PackageModal = require("../models/PackageModel");
 
-// 🌟 จุดที่ 1: เพิ่มตัวแปรดึงกุญแจลับจากไฟล์ .env (ถ้าไม่มีให้ใช้ "mykey")
-const secret = process.env.TOKEN_SECRET || "mykey";
-
-app.post("/member/signin", async (req, res) => {
+router.post("/member/signin", async (req, res) => {
   try {
-    const member = await MemberModel.findAll({
-      where: {
-        phone: req.body.phone,
-        pass: req.body.pass,
-      },
-    });
-
-    if (member.length > 0) {
-      // 🌟 จุดที่ 2: เปลี่ยนมาใช้ตัวแปร secret ที่เราประกาศไว้ด้านบน
-      let token = jwt.sign({ id: member[0].id }, secret);
-      // ใช้ return เพื่อให้จบฟังก์ชันทันที ไม่ไปรันบรรทัดล่างต่อ
-      return res.send({ token: token, message: "success" });
+    const { phone, pass } = req.body || {};
+    if (typeof phone !== "string" || typeof pass !== "string") {
+      return res.status(401).send({ message: "not found" });
     }
 
-    // ถ้าไม่เจอ user จะลงมาทำงานที่นี่เพียงครั้งเดียว
-    res.status(401).send({ message: "not found" });
+    const member = await MemberModel.findOne({ where: { phone } });
+    const check = member
+      ? await service.checkPassword(pass, member.pass)
+      : { ok: false };
+
+    if (!check.ok) {
+      return res.status(401).send({ message: "not found" });
+    }
+
+    // ย้ายรหัสเดิมที่เป็น plaintext ไปเป็น bcrypt อัตโนมัติ
+    if (check.needsRehash) {
+      await member.update({ pass: await service.hashPassword(pass) });
+    }
+
+    const token = service.signToken(member.id, "member");
+    return res.send({ token: token, message: "success" });
   } catch (e) {
-    // ป้องกันกรณีเกิด error หลังจากส่ง headers ไปแล้ว
-    if (!res.headersSent) {
-      res.status(500).send({ message: e.message });
-    }
+    service.sendError(res, e);
   }
 });
 
-app.get("/member/info", service.isLogin, async (req, res, next) => {
+router.get("/member/info", service.isMember, async (req, res) => {
   try {
-    MemberModel.belongsTo(PackageModal);
-
-    const payload = jwt.decode(service.getToken(req));
-    const member = await MemberModel.findByPk(payload.id, {
+    const member = await MemberModel.findByPk(service.getMemberId(req), {
       attributes: ["id", "name"],
       include: [
         {
@@ -52,46 +46,40 @@ app.get("/member/info", service.isLogin, async (req, res, next) => {
 
     res.send({ result: member, message: "success" });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.put("/member/changeProfile", service.isLogin, async (req, res) => {
+router.put("/member/changeProfile", service.isMember, async (req, res) => {
   try {
-    const memberId = service.getMemberId(req);
-    const paylond = {
-      name: req.body.memberName,
-    };
-    const result = await MemberModel.update(paylond, {
-      where: {
-        id: memberId,
-      },
-    });
+    const name = req.body.memberName;
+    if (typeof name !== "string" || !name.trim()) {
+      return res.status(400).send({ message: "กรุณาระบุชื่อ" });
+    }
+    const result = await MemberModel.update(
+      { name: name.trim() },
+      { where: { id: service.getMemberId(req) } },
+    );
 
     res.send({ message: "success", result: result });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-app.get("/member/list", service.isLogin, async (req, res) => {
+router.get("/member/list", service.isAdmin, async (req, res) => {
   try {
-    const PackageMoael = require("../models/PackageModel");
-    MemberModel.belongsTo(PackageMoael);
     const results = await MemberModel.findAll({
       order: [["id", "DESC"]],
       attributes: ["id", "name", "phone", "createdAt"],
       include: {
-        model: PackageMoael,
+        model: PackageModal,
       },
     });
     res.send({ message: "success", results: results });
   } catch (e) {
-    res.statusCode = 500;
-    return res.send({ message: e.message });
+    service.sendError(res, e);
   }
 });
 
-module.exports = app;
+module.exports = router;

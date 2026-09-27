@@ -1,12 +1,26 @@
 const express = require("express");
-const app = express();
+const router = express.Router();
 const Service = require("./Service");
 const StockModel = require('../models/StockModel');
+const ProductModel = require('../models/ProductModel');
+const BillSaleDetailModel = require('../models/BillSaleDetailModel');
 
-app.post('/stock/save', Service.isLogin, async (req, res  ) => {
+router.post('/stock/save', Service.isMember, async (req, res  ) => {
     try {
+        const qty = Service.toPositiveInt(req.body.qty);
+        if (!qty) {
+            return res.status(400).send({ message: 'จำนวนไม่ถูกต้อง' });
+        }
+        const product = await ProductModel.findOne({
+            where: { id: req.body.productId, userId: Service.getMemberId(req) },
+            attributes: ['id']
+        });
+        if (!product) {
+            return res.status(404).send({ message: 'ไม่พบสินค้า' });
+        }
+
         let payload = {
-            qty: req.body.qty,
+            qty: qty,
             productId: req.body.productId,
             userId: Service.getMemberId(req)
         }
@@ -17,15 +31,12 @@ app.post('/stock/save', Service.isLogin, async (req, res  ) => {
 
         res.send({ message: 'success'});
     } catch (e) {
-        res.statusCode = 500,
-        res.send({message: e.message})
+        Service.sendError(res, e);
     }
 })
 
-app.get('/stock/list', Service.isLogin, async (req, res) => {
+router.get('/stock/list', Service.isMember, async (req, res) => {
     try {
-        const ProductModel = require ('../models/ProductModel');
-        StockModel.belongsTo(ProductModel);
 
         const results = await StockModel.findAll({
             where: {
@@ -39,12 +50,11 @@ app.get('/stock/list', Service.isLogin, async (req, res) => {
 
         res.send({ message: 'success', results: results})
     } catch (e) {
-        res.statusCode = 500,
-        res.send({message: e.message})
+        Service.sendError(res, e);
     }
 })
 
-app.delete('/stock/delete/:id', Service.isLogin, async (req, res) => {
+router.delete('/stock/delete/:id', Service.isMember, async (req, res) => {
     try {
         await StockModel.destroy({
             where: {
@@ -55,34 +65,29 @@ app.delete('/stock/delete/:id', Service.isLogin, async (req, res) => {
 
         res.send({message: 'success'});
     } catch (e) {
-        res.statusCode = 500;
-        res.send({message: e.message})
+        Service.sendError(res, e);
     }
 })
 
-app.get('/stock/report', Service.isLogin, async (req, res) => {
+router.get('/stock/report', Service.isMember, async (req, res) => {
     try {
-        const ProductModel = require('../models/ProductModel')
-        const BillSaleDetailModel = require('../models/BillSaleDetailModel')
-
-        ProductModel.hasMany(StockModel);
-        ProductModel.hasMany(BillSaleDetailModel);
-
-        StockModel.belongsTo(ProductModel);
-        BillSaleDetailModel.belongsTo(ProductModel)
 
         let arr = [];
 
+        // separate: true = ดึง stocks และ billSaleDetails เป็น query แยก
+        // (เดิม JOIN 2 hasMany พร้อมกันทำให้แถวคูณกัน stocks × billSaleDetails ต่อสินค้า)
         const results = await ProductModel.findAll({
             include: [
                 {
                     model: StockModel,
+                    separate: true,
                     include: {
                         model: ProductModel
                     }
                 },
                 {
                     model: BillSaleDetailModel,
+                    separate: true,
                     include: {
                         model: ProductModel
                     }
@@ -121,9 +126,8 @@ app.get('/stock/report', Service.isLogin, async (req, res) => {
         }
         res.send({message: 'success' , results: arr});
     } catch (e) {
-        res.statusCode = 500;
-        res.send({ message: e.message })
+        Service.sendError(res, e);
     } 
 }) 
 
-module.exports = app;
+module.exports = router;

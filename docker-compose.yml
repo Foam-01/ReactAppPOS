@@ -8,10 +8,10 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: db_workshop_pos
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432" # เปิดเฉพาะในเครื่อง ไม่เปิดออกเน็ต
     volumes:
       - pgdata:/var/lib/postgresql/data # 🌟 สำคัญ: ป้องกันข้อมูลหายเวลาปิด/เปิดเครื่อง
 

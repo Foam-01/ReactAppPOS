@@ -23,6 +23,6 @@ const UserModel = conn.define("users", {
   },
 });
 
-UserModel.sync({alter: true});
+UserModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = UserModel;

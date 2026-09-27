@@ -1,13 +1,14 @@
 import Template from "./Template";
+import { PageHeader, FilterBar, FilterBarButton } from "../components/PageHeader";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import config from "../config";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import Modal from "../components/Modal";
-import * as dayjs from 'dayjs';
 
 function ReportSumSalePerDay() {
-  const [years, setYears] = useState(() => {
+  const [years] = useState(() => {
     let arr = [];
     let d = new Date();
     let currentYear = d.getFullYear();
@@ -23,7 +24,7 @@ function ReportSumSalePerDay() {
   const [selectedYear, setSelectedYear] = useState(() => {
     return new Date().getFullYear();
   });
-  const [months, setMonths] = useState(() => {
+  const [months] = useState(() => {
     return [
       { number: 1, value: "มกราคม" },
       { number: 2, value: "กุมภาพันธ์" },
@@ -45,8 +46,13 @@ function ReportSumSalePerDay() {
   });
 
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // เลขรอบการโหลด: ถ้าเปลี่ยนปี/เดือนเร็ว ๆ ให้ใช้ผลของคำขอล่าสุดเท่านั้น
+  const requestId = useRef(0);
 
   const handleShopReport = async () => {
+    const id = ++requestId.current;
+    setLoading(true);
     try {
       const payload = {
         month: selectedMonth,
@@ -60,21 +66,29 @@ function ReportSumSalePerDay() {
           config.headers(),
         )
         .then((res) => {
-          if (res.data.message === "success") {
+          if (id === requestId.current && res.data.message === "success") {
             setResults(res.data.results);
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
       });
+    } finally {
+      if (id === requestId.current) setLoading(false);
     }
   };
+
+  // แสดงรายงานอัตโนมัติเมื่อเปิดหน้า และทุกครั้งที่เปลี่ยนปีหรือเดือน
+  useEffect(() => {
+    handleShopReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, selectedMonth]);
 
   const [selectedDay, setSelectedDay] = useState({});
 
@@ -82,82 +96,34 @@ function ReportSumSalePerDay() {
     <>
       <Template>
         <div className="p-4 bg-light min-vh-100">
+          <PageHeader
+            eyebrow="รายงาน / ยอดขายรายวัน"
+            title="ยอดขายรายวัน"
+            description="เลือกปีและเดือน แล้วดูยอดรายได้ค่าบริการของแต่ละวัน"
+            count={loading ? "…" : `${results.length.toLocaleString("th-TH")} วัน`}
+            actions={
+              <FilterBarButton icon={loading ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-rotate-right"} onClick={handleShopReport} disabled={loading}>
+                รีเฟรช
+              </FilterBarButton>
+            }
+          />
+          <FilterBar>
+            <select aria-label="ปี" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="form-select w-auto">
+              {years.map((item) => (
+                <option key={item} value={item}>
+                  ปี {item}
+                </option>
+              ))}
+            </select>
+            <select aria-label="เดือน" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="form-select w-auto">
+              {months.map((item) => (
+                <option key={item.number} value={item.number}>
+                  {item.value}
+                </option>
+              ))}
+            </select>
+          </FilterBar>
           <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-            {/* Card Header แบบพรีเมียม */}
-            <div className="card-header bg-white py-4 border-0 d-flex align-items-center">
-              <div
-                className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-                style={{ width: "50px", height: "50px" }}
-              >
-                <i className="fa-solid fa-chart-line fs-5"></i>
-              </div>
-              <div>
-                <h5
-                  className="mb-1 fw-bold text-dark"
-                  style={{ letterSpacing: "0.5px" }}
-                >
-                  ยอดขายรายวัน
-                </h5>
-                <small className="text-muted fw-medium">
-                  ตรวจสอบและติดตามยอดขายของแต่ละเดือน
-                </small>
-              </div>
-            </div>
-
-            {/* โซนค้นหา (Filter) */}
-            <div
-              className="card-body bg-white border-top border-bottom py-3"
-              style={{ borderColor: "var(--color-row-hover)" }}
-            >
-              <div className="row g-3 align-items-center">
-                <div className="col-auto">
-                  <div className="input-group shadow-sm rounded">
-                    <span className="input-group-text bg-light border-end-0 text-muted fw-bold">
-                      ปี
-                    </span>
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="form-select border-start-0 cursor-pointer fw-medium text-dark"
-                    >
-                      {years.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <div className="input-group shadow-sm rounded">
-                    <span className="input-group-text bg-light border-end-0 text-muted fw-bold">
-                      เดือน
-                    </span>
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                      className="form-select border-start-0 cursor-pointer fw-medium text-dark"
-                    >
-                      {months.map((item) => (
-                        <option key={item.number} value={item.number}>
-                          {item.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <button
-                    onClick={handleShopReport}
-                    className="btn btn-primary px-4 fw-bold shadow-sm btn-search rounded-pill"
-                  >
-                    <i className="fa-solid fa-magnifying-glass me-2"></i>
-                    แสดงรายการ
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Card Body: ตาราง */}
             <div className="card-body p-0">
               <div className="table-responsive">

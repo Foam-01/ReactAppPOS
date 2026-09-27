@@ -1,23 +1,23 @@
 const express = require("express");
-const app = express();
+const router = express.Router();
 const ProductModel = require('../models/ProductModel');
+const ProductImageModel = require('../models/ProductImageModel');
 const Service = require('./Service');
 
+const PRODUCT_FIELDS = ['barcode', 'name', 'cost', 'price', 'detail'];
 
-app.post('/product/insert', Service.isLogin, async (req, res) => {
+router.post('/product/insert', Service.isMember, async (req, res) => {
     try {
-        let payload = req.body;
-        delete payload.id;
+        const payload = Service.pick(req.body, PRODUCT_FIELDS);
         payload.userId = Service.getMemberId(req)
         const result =  await  ProductModel.create(payload);
         res.send({ result: result, message: 'success'})
     } catch (e) {
-        res.statusCode = 500; 
-        res.send({message: e.message});
+        Service.sendError(res, e);
     }
 })
 
-app.get('/product/list', Service.isLogin, async (req, res) => {
+router.get('/product/list', Service.isMember, async (req, res) => {
     try {
         const results = await ProductModel.findAll({
             where: {
@@ -27,46 +27,40 @@ app.get('/product/list', Service.isLogin, async (req, res) => {
         })
         res.send({results: results, message: 'success'})
     } catch (e) {
-        res.statusCode = 500; 
-        res.send({message: e.message});
+        Service.sendError(res, e);
     }
 })
 
-app.delete('/product/delete/:id', Service.isLogin, async (req, res) => {
+router.delete('/product/delete/:id', Service.isMember, async (req, res) => {
     try {
         const result = await ProductModel.destroy({
             where: {
-                id: req.params.id
+                id: req.params.id,
+                userId: Service.getMemberId(req)
             }
         })
         res.send({message: 'success', result: result});
     }catch (e) {
-        res.statusCode = 500; 
-        res.send({message: e.message});
+        Service.sendError(res, e);
     }
 })
 
-app.post('/product/update', Service.isLogin, async (req, res) => {
+router.post('/product/update', Service.isMember, async (req, res) => {
     try {
-        let payload = req.body
-        payload.userId = Service.getMemberId(req)
+        const payload = Service.pick(req.body, PRODUCT_FIELDS);
          const result = await ProductModel.update(payload, {
             where: {
-                id: req.body.id
+                id: req.body.id,
+                userId: Service.getMemberId(req)
             }
          })
          res.send({message: 'success', result: result});
     }catch (e) {
-        res.statusCode = 500; 
-        res.send({message: e.message});
+        Service.sendError(res, e);
     }
 })
 
-app.get('/product/listForSale', Service.isLogin, async (req, res) => {
-    const ProductImageModel = require('../models/ProductlmageModel');
-
-    ProductModel.hasMany(ProductImageModel);
-
+router.get('/product/listForSale', Service.isMember, async (req, res) => {
     try {
         const results = await ProductModel.findAll({
             where: {
@@ -84,9 +78,8 @@ app.get('/product/listForSale', Service.isLogin, async (req, res) => {
 
         res.send({message: 'success', results: results});
     } catch (e) {
-        res.statusCode = 500;
-        res.send({message: e.message});
+        Service.sendError(res, e);
     }
 })
 
-module.exports = app;
+module.exports = router;

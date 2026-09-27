@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "web/app", "start"],
+      "env": { "PORT": "3055", "BROWSER": "none" },
+      "port": 3055
+    }
+  ]
+}

@@ -1,35 +1,64 @@
 const express = require("express");
-const app = express();
+const router = express.Router();
 const PackageModel = require("../models/PackageModel");
 const MemberModel = require("../models/MemberModel");
 const Service = require("./Service");
-const BankModel = require("../models/BankModel");
 const ChangePackageModel = require("../models/ChangePackageModel");
+const BillSaleModel = require("../models/BillSaleModel");
+const { Op } = require("sequelize");
 
-app.get("/package/list", async (req, res) => {
+router.get("/package/list", async (req, res) => {
   try {
     const results = await PackageModel.findAll({
       order: [["price", "ASC"]],
     });
     res.send(results);
   } catch (e) {
-    res.status(500).send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.post("/package/memberRegister", async (req, res) => {
+router.post("/package/memberRegister", async (req, res) => {
   try {
-    const result = await MemberModel.create(req.body);
-    res.send({ message: "success", result: result });
+    const { name, phone, pass, packageId } = req.body || {};
+    if (
+      typeof name !== "string" || !name.trim() ||
+      typeof phone !== "string" || !/^[0-9]{9,10}$/.test(phone) ||
+      typeof pass !== "string" || pass.length < 6
+    ) {
+      return res.status(400).send({
+        message: "ข้อมูลไม่ถูกต้อง (เบอร์โทร 9-10 หลัก, รหัสผ่านอย่างน้อย 6 ตัว)",
+      });
+    }
+
+    const pkg = await PackageModel.findByPk(packageId, { attributes: ["id"] });
+    if (!pkg) {
+      return res.status(400).send({ message: "ไม่พบแพ็กเกจ" });
+    }
+
+    const exists = await MemberModel.findOne({ where: { phone } });
+    if (exists) {
+      return res.status(409).send({ message: "เบอร์โทรนี้ถูกใช้สมัครแล้ว" });
+    }
+
+    const result = await MemberModel.create({
+      name: name.trim(),
+      phone,
+      pass: await Service.hashPassword(pass),
+      packageId: pkg.id,
+    });
+    // ไม่ส่งรหัสผ่าน (hash) กลับไปหา client
+    res.send({
+      message: "success",
+      result: { id: result.id, name: result.name, packageId: result.packageId },
+    });
   } catch (e) {
-    res.status(500).send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.get("/package/countBill", Service.isLogin, async (req, res) => {
+router.get("/package/countBill", Service.isMember, async (req, res) => {
   try {
-    const BillSaleModel = require("../models/BillSaleModel");
-    const { Op } = require("sequelize");
 
     // สร้างวันที่เริ่มต้นของเดือนปัจจุบัน (วันที่ 1 เวลา 00:00:00)
     const now = new Date();
@@ -56,11 +85,11 @@ app.get("/package/countBill", Service.isLogin, async (req, res) => {
 
     res.send({ totalBill: results.length });
   } catch (e) {
-    res.status(500).send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-app.get("/package/changePackage/:id", Service.isLogin, async (req, res) => {
+router.get("/package/changePackage/:id", Service.isMember, async (req, res) => {
   try {
     const payload = {
       userId: Service.getMemberId(req),
@@ -71,8 +100,8 @@ app.get("/package/changePackage/:id", Service.isLogin, async (req, res) => {
 
     res.send({ message: "success" });
   } catch (e) {
-    res.status(500).send({ message: e.message });
+    Service.sendError(res, e);
   }
 });
 
-module.exports = app;
+module.exports = router;

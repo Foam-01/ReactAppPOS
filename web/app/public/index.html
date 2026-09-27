@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
@@ -12,6 +12,11 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
 
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- เชื่อมต่อ CDN ล่วงหน้า ลดเวลาโหลด font/icon -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <title>FoamPos : Point of Sale on Cloud App</title>
 
@@ -27,18 +32,6 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
     />
-
-
-    <link
-      rel="stylesheet"
-      href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
-    />
-
-    <link
-      rel="stylesheet"
-      href="plugins/icheck-bootstrap/icheck-bootstrap.min.css"
-    />
-
     <link rel="stylesheet" href="dist/css/adminlte.min.css" />
 
     <link
@@ -47,17 +40,13 @@
     />
   </head>
   <body
-    class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary hold-transition"
+    class="layout-fixed sidebar-expand-lg bg-body-tertiary hold-transition"
   >
     <div id="root"></div>
 
     <script src="plugins/jquery/jquery.min.js"></script>
-    <script src="plugins/jquery-ui/jquery-ui.min.js"></script>
-    <script>
-      $.widget.bridge("uibutton", $.ui.button);
-    </script>
     <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-    <script src="dist/js/adminlte.js"></script>
+    <script src="dist/js/adminlte.min.js"></script>
   </body>
 </html>

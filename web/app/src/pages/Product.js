@@ -1,16 +1,23 @@
 import Template from "../components/Template";
+import usePagedList from "../utils/usePagedList";
+import { SearchBox, Pagination } from "../components/ListToolbar";
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { closeModal } from "../utils/modal";
+import { getErrorMessage } from "../utils/error";
 import config from "../config";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
+import { PageHeader, FilterBar, FilterBarButton, FilterBarClear } from "../components/PageHeader";
 
 function Product() {
   const [product, setProduct] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
   const [products, setProducts] = useState([]);
   const [productImage, setProductImage] = useState({});
   const [productImages, setProductImages] = useState([]);
+  const list = usePagedList(products, (p) => `${p.name} ${p.barcode}`);
 
   useEffect(() => {
     fetchData();
@@ -28,13 +35,25 @@ function Product() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
   };
 
+  // กันกดบันทึกซ้ำระหว่างรอ server
   const handleSave = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveData(e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveData = async (e) => {
     e.preventDefault();
     try {
       let url = config.api_path + "/product/insert";
@@ -60,7 +79,7 @@ function Product() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.response?.data?.message || e.message, // แสดง Error จริงจาก Server
+        text: getErrorMessage(e), // แสดง Error จริงจาก Server
         icon: "error",
       });
     }
@@ -77,10 +96,7 @@ function Product() {
   };
 
   const handleClose = () => {
-    const btns = document.getElementsByClassName("btnClose");
-    for (let i = 0; i < btns.length; i++) {
-      btns[i].click();
-    }
+    closeModal();
   };
 
   const handleDelete = (item) => {
@@ -113,7 +129,7 @@ function Product() {
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message,
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -163,12 +179,12 @@ function Product() {
               }
             })
             .catch((err) => {
-              throw err.response.data;
+              throw err;
             });
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message,
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -189,7 +205,7 @@ function Product() {
       }
     } catch (e) {
       // ดึง Error Message จาก Server มาแสดง ถ้ามี
-      const errorMessage = e.response?.data?.message || e.message;
+      const errorMessage = getErrorMessage(e);
 
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
@@ -236,12 +252,12 @@ function Product() {
             }
           })
           .catch((err) => {
-            throw err.response.data;
+            throw err;
           });
       } catch (e) {
         Swal.fire({
           title: "เกิดข้อผิดพลาด",
-          text: e.message,
+          text: getErrorMessage(e),
           icon: "error",
         });
       }
@@ -276,7 +292,7 @@ function Product() {
         } catch (e) {
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.response?.data?.message || e.message,
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -287,31 +303,36 @@ function Product() {
   return (
     <>
       <Template>
+        <PageHeader
+          eyebrow="ร้านค้า / สินค้า"
+          title="จัดการสินค้า"
+          description="เพิ่ม แก้ไข และลบสินค้าพร้อมราคาทุน ราคาขาย และบาร์โค้ด"
+          count={`${list.filtered.length.toLocaleString("th-TH")} รายการ`}
+        />
+        <FilterBar
+          actions={
+            <FilterBarButton
+              variant="primary"
+              icon="fa-solid fa-plus"
+              onClick={clearForm}
+              data-toggle="modal"
+              data-target="#modalProduct"
+            >
+              เพิ่มสินค้า
+            </FilterBarButton>
+          }
+        >
+          <SearchBox className="fb-search" value={list.search} onChange={list.setSearch} placeholder="ค้นหาชื่อสินค้าหรือบาร์โค้ด" />
+          {list.search && <FilterBarClear onClick={() => list.setSearch("")} />}
+        </FilterBar>
         <div className="card shadow-sm">
-          <div className="card-header bg-white py-3">
-            <div className="card-title h5 mb-0 text-primary">
-              <i className="fa-solid fa-utensils mr-2"></i> จัดการเมนูอาหาร
-            </div>
-          </div>
           <div className="card-body">
-            {/* ปุ่มเพิ่มรายการ */}
-            <div className="mb-3">
-              <button
-                onClick={clearForm}
-                data-toggle="modal"
-                data-target="#modalProduct"
-                className="btn btn-primary shadow-sm"
-              >
-                <i className="fa-solid fa-plus mr-2"></i> เพิ่มสินค้า
-              </button>
-            </div>
-
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
                 <thead className="table-light text-muted small fw-bold">
                   <tr>
                     <th width="100px" className="text-center">
-                      Barcode
+                      บาร์โค้ด
                     </th>
                     <th>ชื่อสินค้า</th>
                     <th className="text-right" width="120px">
@@ -327,8 +348,8 @@ function Product() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.length > 0 ? (
-                    products.map((item, index) => (
+                  {list.pageItems.length > 0 ? (
+                    list.pageItems.map((item, index) => (
                       <tr key={index}>
                         <td className="align-middle text-center text-muted">
                           {item.barcode}
@@ -346,14 +367,15 @@ function Product() {
                           {item.detail || "-"}
                         </td>
                         <td className="text-center align-middle">
-                          <div className="btn-group" role="group">
+                          <div className="table-actions">
                             {/* ปุ่มรูปภาพ */}
                             <button
                               onClick={(e) => handleChooseProduct(item)}
                               data-toggle="modal"
                               data-target="#modalProductImage"
-                              className="btn btn-primary btn-sm shadow-sm"
+                              className="btn btn-outline-secondary btn-icon"
                               title="จัดการรูปภาพ"
+                              aria-label="จัดการรูปภาพ"
                             >
                               <i className="fa-solid fa-image"></i>
                             </button>
@@ -363,8 +385,9 @@ function Product() {
                               onClick={(e) => setProduct(item)}
                               data-toggle="modal"
                               data-target="#modalProduct"
-                              className="btn btn-outline-primary btn-sm me-1"
+                              className="btn btn-outline-primary btn-icon"
                               title="แก้ไขข้อมูล"
+                              aria-label="แก้ไขข้อมูล"
                             >
                               <i className="fa-solid fa-pencil"></i>
                             </button>
@@ -372,10 +395,11 @@ function Product() {
                             {/* ปุ่มลบ */}
                             <button
                               onClick={(e) => handleDelete(item)}
-                              className="btn btn-outline-danger btn-sm"
+                              className="btn btn-outline-danger btn-icon"
                               title="ลบรายการ"
+                              aria-label="ลบรายการ"
                             >
-                              <i className="fa-solid fa-times"></i>
+                              <i className="fa-solid fa-trash-can"></i>
                             </button>
                           </div>
                         </td>
@@ -384,12 +408,13 @@ function Product() {
                   ) : (
                     <tr>
                       <td colSpan="6">
-<EmptyState icon="fa-box-open" text="ยังไม่มีสินค้า" />
+<EmptyState icon="fa-box-open" text={list.search ? "ไม่พบรายการที่ค้นหา" : "ยังไม่มีสินค้า"} />
 </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+<Pagination page={list.page} totalPages={list.totalPages} total={list.filtered.length} onChange={list.setPage} />
             </div>
           </div>
         </div>
@@ -399,8 +424,8 @@ function Product() {
         <form onSubmit={handleSave} className="p-2">
           <div className="row">
             <div className="mt-3 col-md-3 col-sm-12">
-              <label className="form-label fw-bold">Barcode</label>
-              <input
+              <label htmlFor="product-field-1" className="form-label fw-bold">บาร์โค้ด</label>
+              <input id="product-field-1"
                 value={product.barcode}
                 onChange={(e) =>
                   setProduct({ ...product, barcode: e.target.value })
@@ -412,8 +437,8 @@ function Product() {
 
             {/* ชื่อสินค้า - เน้นให้กว้างครอบคลุม */}
             <div className="mt-3 col-md-9 col-sm-12">
-              <label className="form-label fw-bold">ชื่อสินค้า</label>
-              <input
+              <label htmlFor="product-field-2" className="form-label fw-bold">ชื่อสินค้า</label>
+              <input id="product-field-2"
                 value={product.name}
                 onChange={(e) =>
                   setProduct({ ...product, name: e.target.value })
@@ -425,10 +450,10 @@ function Product() {
 
             {/* ราคาจำหน่าย - ใส่ type="number" เพื่อให้คีย์บอร์ดมือถือขึ้นตัวเลข */}
             <div className="mt-3 col-md-3 col-sm-6">
-              <label className="form-label fw-bold text-success">
+              <label htmlFor="product-field-3" className="form-label fw-bold text-success">
                 ราคาจำหน่าย
               </label>
-              <input
+              <input id="product-field-3"
                 value={product.price}
                 onChange={(e) =>
                   setProduct({ ...product, price: e.target.value })
@@ -441,8 +466,8 @@ function Product() {
 
             {/* ราคาทุน */}
             <div className="mt-3 col-md-3 col-sm-6">
-              <label className="form-label fw-bold text-danger">ราคาทุน</label>
-              <input
+              <label htmlFor="product-field-4" className="form-label fw-bold text-danger">ราคาทุน</label>
+              <input id="product-field-4"
                 value={product.cost}
                 onChange={(e) =>
                   setProduct({ ...product, cost: e.target.value })
@@ -455,8 +480,8 @@ function Product() {
 
             {/* รายละเอียด */}
             <div className="mt-3 col-md-6 col-sm-12">
-              <label className="form-label fw-bold">รายละเอียดสินค้า</label>
-              <input
+              <label htmlFor="product-field-5" className="form-label fw-bold">รายละเอียดสินค้า</label>
+              <input id="product-field-5"
                 value={product.detail}
                 onChange={(e) =>
                   setProduct({ ...product, detail: e.target.value })
@@ -471,6 +496,7 @@ function Product() {
           <div className="mt-4 pt-2 border-top">
             <button
               onClick={handleSave}
+              disabled={isSaving}
               className="btn btn-primary px-4 shadow-sm"
             >
               <i className="fa-solid fa-check mr-2" />
@@ -489,10 +515,10 @@ function Product() {
           {/* Barcode */}
           <div className="col-md-4 col-sm-12">
             <div className="form-group">
-              <label className="fw-bold text-muted small text-uppercase">
-                Barcode
+              <label htmlFor="product-field-6" className="fw-bold text-muted small text-uppercase">
+                บาร์โค้ด
               </label>
-              <input
+              <input id="product-field-6"
                 value={product.barcode}
                 disabled
                 className="form-control bg-light border-0"
@@ -503,8 +529,8 @@ function Product() {
           {/* ชื่อสินค้า */}
           <div className="col-md-8 col-sm-12">
             <div className="form-group">
-              <label className="fw-bold text-muted small">ชื่อเมนูอาหาร</label>
-              <input
+              <label htmlFor="product-field-7" className="fw-bold text-muted small">ชื่อสินค้า</label>
+              <input id="product-field-7"
                 value={product.name}
                 disabled
                 className="form-control bg-light border-0"
@@ -515,8 +541,8 @@ function Product() {
           {/* รายละเอียด */}
           <div className="col-12 mt-2">
             <div className="form-group">
-              <label className="fw-bold text-muted small">รายละเอียด</label>
-              <input
+              <label htmlFor="product-field-8" className="fw-bold text-muted small">รายละเอียด</label>
+              <input id="product-field-8"
                 value={product.detail || "-"}
                 disabled
                 className="form-control bg-light border-0"
@@ -526,11 +552,11 @@ function Product() {
 
           {/* ส่วนเลือกภาพสินค้า */}
           <div className="col-12 mt-3 p-3 bg-light rounded border">
-            <label className="fw-bold mb-2">
+            <label htmlFor="product-field-9" className="fw-bold mb-2">
               <i className="fa-solid fa-cloud-upload mr-2 text-primary"></i>
               เลือกไฟล์ภาพสินค้า
             </label>
-            <input
+            <input id="product-field-9"
               onChange={(e) => handleChangeFile(e.target.files)}
               type="file"
               name="imageName"
@@ -582,6 +608,8 @@ function Product() {
                   >
                     <img
                       className="card-img-top"
+                      loading="lazy"
+                      decoding="async"
                       src={config.api_path + "/uploads/" + item.imageName}
                       alt={item.imageName}
                       style={{

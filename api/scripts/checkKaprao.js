@@ -1,6 +1,6 @@
-const ProductModel = require("./models/ProductModel");
-const ProductImageModel = require("./models/ProductlmageModel");
-const sequelize = require("./connect");
+const ProductModel = require("../models/ProductModel");
+const ProductImageModel = require("../models/ProductImageModel");
+const sequelize = require("../connect");
 
 async function checkKaprao() {
   try {

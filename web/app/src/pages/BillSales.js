@@ -1,14 +1,19 @@
 import Template from "../components/Template";
+import usePagedList from "../utils/usePagedList";
+import { SearchBox, Pagination } from "../components/ListToolbar";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import { useEffect, useState } from "react";
 import EmptyState from "../components/EmptyState";
+import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
 import * as dayjs from "dayjs";
 
 function BillSales() {
   const [billSales, setBillSales] = useState([]);
+  const list = usePagedList(billSales, (b) => String(b.id));
   const [selectBill, setSelectBill] = useState({});
 
   useEffect(() => {
@@ -24,7 +29,7 @@ function BillSales() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.response?.data?.message || e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -39,36 +44,31 @@ function BillSales() {
   return (
     <Template>
       <div className="p-4 bg-light min-vh-100">
+        <PageHeader
+          eyebrow="รายงาน / บิลขาย"
+          title="รายงานบิลขาย"
+          description="ตรวจสอบประวัติและรายละเอียดบิลขายทั้งหมดของร้าน"
+          count={`${list.filtered.length.toLocaleString("th-TH")} บิล`}
+        />
+        <FilterBar>
+          <SearchBox className="fb-search" value={list.search} onChange={list.setSearch} placeholder="ค้นหาเลขบิล" />
+          {list.search && <FilterBarClear onClick={() => list.setSearch("")} />}
+        </FilterBar>
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          
-          {/* ส่วนหัวของ Card */}
-          <div className="card-header border-0 py-4 px-4 d-flex justify-content-between align-items-center bg-white">
-            <div>
-              <h5 className="mb-1 fw-bold text-dark">
-                <i className="fa-solid fa-file-invoice-dollar text-primary me-2"></i>
-                รายงานบิลขาย
-              </h5>
-              <p className="text-muted small mb-0">ตรวจสอบประวัติและรายละเอียดการขายทั้งหมดของระบบ</p>
-            </div>
-            <span className="badge bg-primary rounded-pill px-3 py-2 shadow-sm">
-              {billSales.length} Transactions
-            </span>
-          </div>
-
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
                 <thead className="table-light text-muted small fw-bold">
                   <tr className="small text-uppercase fw-bold" style={{ letterSpacing: "1px" }}>
-                    <th className="py-3 ps-4 border-0">เครื่องมือ</th>
+                    <th className="py-3 ps-4 border-0">จัดการ</th>
                     <th className="py-3 border-0">หมายเลขบิล</th>
                     <th className="py-3 border-0">วันที่ทำรายการ</th>
                     <th className="py-3 border-0 text-end pe-4">ยอดเงินสุทธิ</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white">
-                  {billSales.length > 0 ? (
-                    billSales.map((item, index) => (
+                  {list.pageItems.length > 0 ? (
+                    list.pageItems.map((item, index) => (
                       <tr key={index} className="border-bottom">
                         {/* เครื่องมือ: เพิ่ม py-3 เพื่อให้แถวสูงขึ้น ไม่ดูอึดอัด */}
                         <td className="ps-4 py-3">
@@ -124,12 +124,13 @@ function BillSales() {
                   ) : (
                     <tr>
                       <td colSpan="4">
-                        <EmptyState icon="fa-receipt" text="ไม่พบข้อมูลบิลขายในระบบ" />
+                        <EmptyState icon="fa-receipt" text={list.search ? "ไม่พบรายการที่ค้นหา" : "ไม่พบข้อมูลบิลขายในระบบ"} />
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+<Pagination page={list.page} totalPages={list.totalPages} total={list.filtered.length} onChange={list.setPage} />
             </div>
           </div>
           

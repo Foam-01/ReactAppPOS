@@ -26,6 +26,6 @@ const ChangePackageModel = conn.define("ChangePackages", {
   },
 });
 
-ChangePackageModel.sync({ alter: true });
+ChangePackageModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports = ChangePackageModel;

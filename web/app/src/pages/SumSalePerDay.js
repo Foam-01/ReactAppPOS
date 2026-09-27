@@ -1,5 +1,7 @@
 import Template from "../components/Template";
+import { PageHeader, FilterBar, FilterBarButton } from "../components/PageHeader";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
@@ -12,7 +14,7 @@ function SumSalePerDay() {
     let myDate = new Date();
     return myDate.getFullYear();
   });
-  const [arrYear, setArrYear] = useState(() => {
+  const [arrYear] = useState(() => {
     let arr = [];
     let myDate = new Date();
     let currentYear = myDate.getFullYear();
@@ -28,7 +30,7 @@ function SumSalePerDay() {
     let myDate = new Date();
     return myDate.getMonth() + 1;
   });
-  const [arrMonth, setArrMonth] = useState(() => {
+  const [arrMonth] = useState(() => {
     let arr = [
       { value: 1, label: "มกราคม" },
       { value: 2, label: "กุมภาพันธ์" },
@@ -70,12 +72,12 @@ function SumSalePerDay() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -84,73 +86,46 @@ function SumSalePerDay() {
   return (
     <>
       <Template>
-        {/* ปรับ Card ให้มีความมนและมีเงาจางๆ ดูทันสมัย */}
+        <PageHeader
+          eyebrow="รายงาน / ยอดขายรายวัน"
+          title="สรุปยอดขายรายวัน"
+          description="เลือกปีและเดือน แล้วดูยอดขายรวมของแต่ละวันพร้อมบิล"
+          count={`${billSales.length.toLocaleString("th-TH")} วัน`}
+        />
+        <FilterBar
+          actions={
+            <FilterBarButton variant="primary" icon="fa-solid fa-search" onClick={handleShowReport}>
+              แสดงรายงาน
+            </FilterBarButton>
+          }
+        >
+          <select
+            aria-label="เลือกปี"
+            onChange={(e) => setCurrentYear(e.target.value)}
+            value={currentYear}
+            className="form-select w-auto"
+          >
+            {arrYear.map((item) => (
+              <option key={item} value={item}>
+                ปี {item}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="เลือกเดือน"
+            onChange={(e) => setCurrentMonth(e.target.value)}
+            value={currentMonth}
+            className="form-select w-auto"
+          >
+            {arrMonth.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </FilterBar>
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          <div className="card-header bg-white py-3 border-0">
-            <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fa-solid fa-chart-line me-2"></i>
-              รายงานสรุปยอดขายรายวัน
-            </div>
-          </div>
-
           <div className="card-body">
-            {/* ส่วนตัวเลือก ปี และ เดือน ปรับให้ดูเป็นระเบียบ */}
-            <div className="row g-3 mb-4 align-items-end">
-              <div className="col-md-3">
-                <label className="form-label small fw-bold text-muted">
-                  เลือกปี
-                </label>
-                <div className="input-group shadow-sm rounded">
-                  <span className="input-group-text bg-light border-end-0">
-                    <i className="fa-solid fa-calendar text-primary"></i>
-                  </span>
-                  <select
-                    onChange={(e) => setCurrentYear(e.target.value)}
-                    value={currentYear}
-                    className="form-select border-start-0 ps-0"
-                  >
-                    {arrYear.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="col-md-3">
-                <label className="form-label small fw-bold text-muted">
-                  เลือกเดือน
-                </label>
-                <div className="input-group shadow-sm rounded">
-                  <span className="input-group-text bg-light border-end-0">
-                    <i className="fa-solid fa-calendar-check text-primary"></i>
-                  </span>
-                  <select
-                    onChange={(e) => setCurrentMonth(e.target.value)}
-                    value={currentMonth}
-                    className="form-select border-start-0 ps-0"
-                  >
-                    {arrMonth.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="col-md-6">
-                <button
-                  onClick={handleShowReport}
-                  className="btn btn-primary px-4 py-2 shadow-sm fw-bold rounded-3 w-100 w-md-auto"
-                >
-                  <i className="fa-solid fa-search me-2"></i>
-                  แสดงรายงานยอดขาย
-                </button>
-              </div>
-            </div>
-
             {/* ตารางแสดงข้อมูล ปรับให้ดู Clean และอ่านง่ายขึ้น */}
             <div className="table-responsive rounded-3 border">
               <table className="table table-hover align-middle mb-0">

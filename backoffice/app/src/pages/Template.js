@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal, { DANGER_COLOR } from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -31,7 +32,7 @@ function Template(props) {
       }
     } catch (e) {
       if (e.response && e.response.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(config.token_name);
         navigate("/");
       }
     }
@@ -54,7 +55,7 @@ function Template(props) {
       buttonsStyling: false,
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(config.token_name);
         navigate("/");
       }
     });
@@ -140,7 +141,7 @@ function Template(props) {
           // ดัก error รวม
           Swal.fire({
             title: "เกิดข้อผิดพลาด",
-            text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+            text: getErrorMessage(e),
             icon: "error",
           });
         }
@@ -163,17 +164,23 @@ function Template(props) {
       <div className="d-lg-none bg-sidebar p-3 d-flex justify-content-between align-items-center shadow-sm text-white sticky-top">
         <span className="fw-bold text-info">POS BACKOFFICE</span>
         <button
+          type="button"
           className="btn text-white border-0"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          aria-label={isSidebarOpen ? "ปิดเมนู" : "เปิดเมนู"}
+          aria-expanded={isSidebarOpen}
+          aria-controls="backoffice-sidebar"
         >
           <i
             className={`fa-solid ${isSidebarOpen ? "fa-xmark" : "fa-bars"} fs-4`}
+            aria-hidden="true"
           ></i>
         </button>
       </div>
 
       {/* --- Sidebar --- */}
       <div
+        id="backoffice-sidebar"
         className={`col-sidebar bg-sidebar text-white h-100 shadow-sm d-flex flex-column pt-3 ${isSidebarOpen ? "open" : ""}`}
       >
         {/* Admin Profile Section (ลด margin bottom จาก mb-4 เป็น mb-3) */}
@@ -204,7 +211,7 @@ function Template(props) {
         </div>
 
         {/* Navigation Menu (🌟 เอา overflow-auto ออก เพื่อไม่ให้เลื่อนได้ 🌟) */}
-        <div className="nav-container px-3 flex-grow-1">
+        <nav className="nav-container px-3 flex-grow-1" aria-label="เมนูหลัก">
           {/* เอา pb-5 ออก */}
           <ul className="nav flex-column gap-1 mt-1">
             <li className="nav-label ps-3 text-uppercase opacity-50 small fw-bold mb-1">
@@ -214,6 +221,7 @@ function Template(props) {
               <Link
                 to="/home"
                 className={`nav-link-minimal ${isActive("/home")}`}
+                aria-current={isActive("/home") ? "page" : undefined}
               >
                 <i className="fa-solid fa-chart-pie"></i>
                 <span>Dashboard</span>
@@ -228,6 +236,7 @@ function Template(props) {
               <Link
                 to="/reportMember"
                 className={`nav-link-minimal ${isActive("/reportMember")}`}
+                aria-current={isActive("/reportMember") ? "page" : undefined}
               >
                 <i className="fa-solid fa-user-check"></i>
                 <span>สมัครใช้บริการ</span>
@@ -237,6 +246,7 @@ function Template(props) {
               <Link
                 to="/reportChangePackage"
                 className={`nav-link-minimal ${isActive("/reportChangePackage")}`}
+                aria-current={isActive("/reportChangePackage") ? "page" : undefined}
               >
                 <i className="fa-solid fa-rotate"></i>
                 <span>เปลี่ยนแพ็กเกจ</span>
@@ -246,6 +256,7 @@ function Template(props) {
               <Link
                 to="/reportSumSalePerDay"
                 className={`nav-link-minimal ${isActive("/reportSumSalePerDay")}`}
+                aria-current={isActive("/reportSumSalePerDay") ? "page" : undefined}
               >
                 <i className="fa-solid fa-calendar-day"></i>
                 <span>ยอดขายรายวัน</span>
@@ -255,6 +266,7 @@ function Template(props) {
               <Link
                 to="/reportSumSalePerMonth"
                 className={`nav-link-minimal ${isActive("/reportSumSalePerMonth")}`}
+                aria-current={isActive("/reportSumSalePerMonth") ? "page" : undefined}
               >
                 <i className="fa-solid fa-calendar-days"></i>
                 <span>รายได้รายเดือน</span>
@@ -264,6 +276,7 @@ function Template(props) {
               <Link
                 to="/reportSumSalePerYear"
                 className={`nav-link-minimal ${isActive("/reportSumSalePerYear")}`}
+                aria-current={isActive("/reportSumSalePerYear") ? "page" : undefined}
               >
                 <i className="fa-solid fa-chart-column"></i>
                 <span>รายได้รายปี</span>
@@ -278,13 +291,14 @@ function Template(props) {
               <Link
                 to="/admin"
                 className={`nav-link-minimal ${isActive("/admin")}`}
+                aria-current={isActive("/admin") ? "page" : undefined}
               >
                 <i className="fa-solid fa-gears"></i>
                 <span>ผู้ใช้ระบบ</span>
               </Link>
             </li>
           </ul>
-        </div>
+        </nav>
 
         {/* Footer Buttons (แก้ไข/ออกจากระบบ) */}
         <div className="p-3 mt-auto border-top border-secondary d-flex flex-column gap-2">
@@ -316,20 +330,23 @@ function Template(props) {
       )}
 
       {/* --- Main Content Area --- */}
-      <div className="flex-grow-1 bg-light-gray h-100 overflow-auto p-3 p-md-4">
+      <main className="flex-grow-1 bg-light-gray h-100 overflow-auto p-3 p-md-4">
         <div className="content-inner shadow-sm rounded-4 bg-white p-3 p-md-4 min-vh-100 border animate__animated animate__fadeIn">
           {props.children}
         </div>
-      </div>
+      </main>
 
       <style>{`
         .bg-sidebar { background-color: #1e1e2d; }
         .bg-light-gray { background-color: #f5f7f9; }
-        .text-secondary-light { color: #6c7293; }
+        .text-secondary-light { color: #9a9cb8; }
         .bg-gradient-primary { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
         .bg-profile-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
 
-        .nav-label { font-size: 0.65rem; color: #4a4a65; letter-spacing: 1px; }
+        .nav-label { font-size: 0.7rem; color: #9a9cb8; letter-spacing: 1px; }
+        .nav-label.opacity-50 { opacity: 1 !important; }
+        /* จอเตี้ย (มือถือแนวนอน): ให้เมนูเลื่อนได้ ไม่ถูกตัด */
+        .nav-container { overflow-y: auto; min-height: 0; }
 
         /* 🔥 Sidebar Responsive Logic */
         .col-sidebar {
@@ -392,8 +409,8 @@ function Template(props) {
         }
       >
         <div>
-          <label className="fw-bold text-secondary small mb-1">Username</label>
-          <input
+          <label htmlFor="template-field-1" className="fw-bold text-secondary small mb-1">Username</label>
+          <input id="template-field-1"
             onChange={(e) => setUsr(e.target.value)}
             // 🌟 1. ใช้ admin?.usr || "" เพื่อดักบั๊ก null
             // 🌟 2. ใช้ defaultValue เพื่อให้พิมพ์แก้ไขได้
@@ -404,10 +421,10 @@ function Template(props) {
         </div>
 
         <div className="mt-3">
-          <label className="fw-bold text-secondary small mb-1">
+          <label htmlFor="template-field-2" className="fw-bold text-secondary small mb-1">
             New Password
           </label>
-          <input
+          <input id="template-field-2"
             onChange={(e) => setPwd(e.target.value)}
             value={pwd} // รหัสผ่านใช้ state pwd ปกติได้เลย
             type="password" // 🌟 เปลี่ยนเป็น type="password" ให้กรอกแล้วเป็นจุดดำๆ

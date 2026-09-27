@@ -1,14 +1,15 @@
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import Template from "./Template";
+import { PageHeader, FilterBar, FilterBarButton } from "../components/PageHeader";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
-import * as dayjs from "dayjs";
 
 
 function ReportSumsalePerMonth() {
-  const [years, setYears] = useState(() => {
+  const [years] = useState(() => {
     let arr = [];
     let d = new Date();
     let currentYear = d.getFullYear();
@@ -26,7 +27,7 @@ function ReportSumsalePerMonth() {
   });
 
   const [results, setResults] = useState([]);
-  const [arrMonth, setArrMonth] = useState(() => {
+  const [arrMonth] = useState(() => {
     return [
       "มกราคม",
       "กุมภาพันธ์",
@@ -65,12 +66,12 @@ function ReportSumsalePerMonth() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -82,66 +83,28 @@ function ReportSumsalePerMonth() {
     <>
       <Template>
         <div className="p-4 bg-light min-vh-100">
+          <PageHeader
+            eyebrow="รายงาน / รายได้รายเดือน"
+            title="รายได้รายเดือน"
+            description="เลือกปี แล้วเปรียบเทียบรายได้ค่าบริการรวมของแต่ละเดือน"
+            count={`${results.length.toLocaleString("th-TH")} เดือน`}
+          />
+          <FilterBar
+            actions={
+              <FilterBarButton variant="primary" icon="fa-solid fa-magnifying-glass" onClick={fetchData}>
+                แสดงรายการ
+              </FilterBarButton>
+            }
+          >
+            <select aria-label="ปี" value={selecteYear} onChange={(e) => setSelecteYear(e.target.value)} className="form-select w-auto">
+              {years.map((item) => (
+                <option key={item} value={item}>
+                  ปี {item}
+                </option>
+              ))}
+            </select>
+          </FilterBar>
           <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-            {/* Card Header แบบพรีเมียม */}
-            <div className="card-header bg-white py-4 border-0 d-flex align-items-center">
-              <div
-                className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-                style={{ width: "50px", height: "50px" }}
-              >
-                <i className="fa-solid fa-calendar-days fs-5"></i>
-              </div>
-              <div>
-                <h5
-                  className="mb-1 fw-bold text-dark"
-                  style={{ letterSpacing: "0.5px" }}
-                >
-                  รายได้รายเดือน
-                </h5>
-                <small className="text-muted fw-medium">
-                  ตรวจสอบและเปรียบเทียบยอดขายรวมในแต่ละเดือนของปี
-                </small>
-              </div>
-            </div>
-
-            {/* โซนค้นหา (Filter) */}
-            <div
-              className="card-body bg-white border-top border-bottom py-3"
-              style={{ borderColor: "var(--color-row-hover)" }}
-            >
-              <div className="row g-3 align-items-center">
-                <div className="col-auto">
-                  <div className="input-group shadow-sm rounded">
-                    <span className="input-group-text bg-light border-end-0 text-muted fw-bold">
-                      ปี
-                    </span>
-                    <select
-                      value={selecteYear}
-                      onChange={(e) =>
-                        setSelecteYear(e.target.value)
-                      } /* 🌟 เพิ่ม onChange ตรงนี้ให้แล้วครับ */
-                      className="form-select border-start-0 cursor-pointer fw-medium text-dark"
-                    >
-                      {years.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <button
-                    onClick={fetchData}
-                    className="btn btn-primary px-4 fw-bold shadow-sm btn-search rounded-pill"
-                  >
-                    <i className="fa-solid fa-magnifying-glass me-2"></i>
-                    แสดงรายการ
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Card Body: ตาราง */}
             <div className="card-body p-0">
               <div className="table-responsive">

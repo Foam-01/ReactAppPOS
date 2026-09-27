@@ -27,6 +27,6 @@ const ProductModel = conn.define("products", {
   },
 });
 
-ProductModel.sync({alter: true});
+ProductModel.sync(); // สร้างตารางที่ยังไม่มีเท่านั้น ห้าม alter: .env ชี้ไป DB production
 
 module.exports  = ProductModel;

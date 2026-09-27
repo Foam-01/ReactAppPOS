@@ -3,7 +3,10 @@ import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
 import Swal from "../utils/swal";
-import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../utils/error";
+import { Link, useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
+import { closeModal } from "../utils/modal";
 
 function Package() {
   const [packages, setPackages] = useState([]);
@@ -11,20 +14,27 @@ function Package() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [pass, setPass] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    document.title = "สมัครใช้งาน | FoamPos";
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    setIsLoading(true);
+    setLoadError(false);
     try {
       const res = await axios.get(config.api_path + "/package/list");
       setPackages(res.data);
     } catch (e) {
-      console.log("Error fetching packages:", e.message);
+      setLoadError(true);
     }
+    setIsLoading(false);
   };
 
   const choosePackage = (item) => {
@@ -33,6 +43,7 @@ function Package() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     try {
       const result = await Swal.fire({
         title: "ยืนยันการสมัครใช้งาน",
@@ -44,6 +55,7 @@ function Package() {
       });
 
       if (result.isConfirmed) {
+        setIsSubmitting(true);
         const payload = {
           packageId: yourPackage.id,
           name: name,
@@ -65,34 +77,21 @@ function Package() {
             showConfirmButton: false,
           });
 
-          // ✅ วิธีปิด Modal ที่ปลอดภัยที่สุด: สั่งคลิกปุ่มปิดที่มีคลาส btn-close หรือ data-bs-dismiss
-          const closeBtn =
-            document.querySelector('[data-bs-dismiss="modal"]') ||
-            document.getElementById("btnModalClose") ||
-            document.querySelector(".btn-close");
-
-          if (closeBtn) {
-            closeBtn.click();
-          }
-
-          // ✅ ล้างค่า Backdrop สีเทาที่มักจะค้างเวลาเปลี่ยนหน้าทันที
-          document.body.classList.remove("modal-open");
-          const backdrops = document.querySelectorAll(".modal-backdrop");
-          backdrops.forEach((el) => el.remove());
-
-          navigate("/login");
+          closeModal();
+          navigate("/login", { state: { phone } });
         }
       }
     } catch (err) {
       // ✅ ดักจับ Error แบบละเอียด หน้าจอจะไม่แดง
       const errorMsg =
-        err.response?.data?.message || err.message || "ระบบขัดข้อง";
+        getErrorMessage(err);
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: errorMsg,
         icon: "error",
       });
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -101,7 +100,22 @@ function Package() {
         <div className="text-center mb-5">
           <div className="h2 fw-bold text-dark">FoamPos</div>
           <div className="h5 text-muted">Point of Sale on Cloud App</div>
+          <div className="mt-3 text-muted">
+            มีบัญชีแล้ว? <Link to="/login" className="fw-bold">เข้าสู่ระบบ</Link>
+          </div>
         </div>
+
+        {isLoading && <Loading text="กำลังโหลดแพ็กเกจ..." />}
+        {!isLoading && loadError && (
+          <div className="text-center py-5">
+            <i className="fa-solid fa-triangle-exclamation fa-2x text-warning d-block mb-3"></i>
+            <div className="fw-bold text-dark">โหลดแพ็กเกจไม่สำเร็จ</div>
+            <div className="small text-muted mb-3">เซิร์ฟเวอร์อาจกำลังเริ่มทำงาน รอสักครู่แล้วลองใหม่</div>
+            <button className="btn btn-primary rounded-pill px-4" onClick={fetchData}>
+              <i className="fa-solid fa-rotate-right me-2"></i>ลองใหม่
+            </button>
+          </div>
+        )}
 
         <div className="row g-4">
           {packages.map((item) => (
@@ -165,14 +179,14 @@ function Package() {
 
           <div className="px-1">
             <div className="mb-3">
-              <label className="form-label fw-bold text-dark small text-uppercase">
+              <label htmlFor="package-field-1" className="form-label fw-bold text-dark small text-uppercase">
                 ชื่อร้านค้าของคุณ
               </label>
               <div className="input-group shadow-sm rounded-3 overflow-hidden">
                 <span className="input-group-text bg-white border-end-0 text-primary">
                   <i className="fa-solid fa-shop"></i>
                 </span>
-                <input
+                <input id="package-field-1"
                   className="form-control border-start-0 ps-1 py-2 shadow-none"
                   placeholder="เช่น สมชาย คาเฟ่"
                   onChange={(e) => setName(e.target.value)}
@@ -182,15 +196,17 @@ function Package() {
             </div>
 
             <div className="mb-3">
-              <label className="form-label fw-bold text-dark small text-uppercase">
+              <label htmlFor="package-field-2" className="form-label fw-bold text-dark small text-uppercase">
                 เบอร์โทรศัพท์
               </label>
               <div className="input-group shadow-sm rounded-3 overflow-hidden">
                 <span className="input-group-text bg-white border-end-0 text-primary">
                   <i className="fa-solid fa-phone"></i>
                 </span>
-                <input
+                <input id="package-field-2"
                   className="form-control border-start-0 ps-1 py-2 shadow-none"
+                  type="tel"
+                  inputMode="tel"
                   placeholder="08x-xxx-xxxx"
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -199,14 +215,14 @@ function Package() {
             </div>
 
             <div className="mb-4">
-              <label className="form-label fw-bold text-dark small text-uppercase">
+              <label htmlFor="package-field-3" className="form-label fw-bold text-dark small text-uppercase">
                 ตั้งรหัสผ่านเข้าใช้งาน
               </label>
               <div className="input-group shadow-sm rounded-3 overflow-hidden">
                 <span className="input-group-text bg-white border-end-0 text-primary">
                   <i className="fa-solid fa-key"></i>
                 </span>
-                <input
+                <input id="package-field-3"
                   type="password"
                   className="form-control border-start-0 ps-1 py-2 shadow-none"
                   placeholder="กำหนดรหัสผ่าน"
@@ -218,10 +234,14 @@ function Package() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg d-flex align-items-center justify-content-center border-0 mb-3"
             >
-              <span>ยืนยันการสมัครสมาชิก</span>
-              <i className="fa-solid fa-circle-arrow-right ms-2 fs-5"></i>
+              {isSubmitting ? (
+                <><i className="fa-solid fa-spinner fa-spin me-2"></i><span>กำลังสมัคร...</span></>
+              ) : (
+                <><span>ยืนยันการสมัครสมาชิก</span><i className="fa-solid fa-circle-arrow-right ms-2 fs-5"></i></>
+              )}
             </button>
           </div>
         </form>

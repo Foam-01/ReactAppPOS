@@ -1,5 +1,8 @@
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import Template from "./Template";
+import { SearchBox } from "../components/ListToolbar";
+import { PageHeader, PageHeaderPill, FilterBar, FilterBarClear } from "../components/PageHeader";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
@@ -9,7 +12,8 @@ import Modal from "../components/Modal";
 function ReportChangePackage() {
   
   const [members, setMembers] = useState([]);
-  const [hours, setHours] = useState(() => {
+  const [search, setSearch] = useState("");
+  const [hours] = useState(() => {
     let arr = [];
 
     for (let i = 0; i <= 23; i++) {
@@ -19,7 +23,7 @@ function ReportChangePackage() {
     return arr;
   });
 
-  const [minutes, setMinutes] = useState(() => {
+  const [minutes] = useState(() => {
     let arr = [];
 
     for (let i = 0; i < 59; i++) {
@@ -60,13 +64,13 @@ function ReportChangePackage() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
       });
     }
   };
@@ -108,52 +112,38 @@ function ReportChangePackage() {
           }
         })
         .catch((err) => {
-          throw err.response.data;
+          throw err;
         });
     } catch (e) {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
       });
     }
   };
+
+  // ค้นหาฝั่งหน้าเว็บจากรายการที่โหลดแล้ว
+  const keyword = search.trim().toLowerCase();
+  const filtered = keyword
+    ? members.filter((item) => `${item.member?.name} ${item.member?.phone} ${item.package?.name}`.toLowerCase().includes(keyword))
+    : members;
 
   return (
     <>
       <Template>
         <div className="p-4 bg-light min-vh-100">
+          <PageHeader
+            eyebrow="รายงาน / เปลี่ยนแพ็กเกจ"
+            title="คำขอเปลี่ยนแพ็กเกจ"
+            description="ตรวจสอบและยืนยันการชำระเงินของคำขอเปลี่ยนแพ็กเกจ"
+            summary={<PageHeaderPill tone="amber">รออนุมัติ {filtered.length.toLocaleString("th-TH")}</PageHeaderPill>}
+          />
+          <FilterBar>
+            <SearchBox className="fb-search" value={search} onChange={setSearch} placeholder="ค้นหาชื่อ เบอร์โทร หรือแพ็กเกจ" />
+            {search && <FilterBarClear onClick={() => setSearch("")} />}
+          </FilterBar>
           <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-            {/* Card Header แบบมีมิติ */}
-            <div className="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <div
-                  className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-                  style={{ width: "50px", height: "50px" }}
-                >
-                  <i className="fa-solid fa-exchange-alt fs-5"></i>
-                </div>
-                <div>
-                  <h5
-                    className="mb-1 fw-bold text-dark"
-                    style={{ letterSpacing: "0.5px" }}
-                  >
-                    รายงานการขอเปลี่ยนแพ็กเกจ
-                  </h5>
-                  <small className="text-muted fw-medium">
-                    ตรวจสอบและอนุมัติคำขอปรับเปลี่ยนแผนการใช้งานของสมาชิก
-                  </small>
-                </div>
-              </div>
-
-              {/* Badge แสดงจำนวนคำขอ */}
-              <span className="badge bg-primary-subtle text-primary rounded-pill px-4 py-2 shadow-sm border border-primary-subtle fs-6">
-                <i className="fa-solid fa-bell me-2"></i>
-                
-                {members.length} คำขอรออนุมัติ
-              </span>
-            </div>
-
             {/* Card Body */}
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -193,8 +183,8 @@ function ReportChangePackage() {
                     </tr>
                   </thead>
                   <tbody className="border-top-0 bg-white">
-                    {members.length > 0 ? (
-                      members.map((item, index) => (
+                    {filtered.length > 0 ? (
+                      filtered.map((item, index) => (
                         <tr key={index}>
                           {/* ข้อมูลสมาชิก */}
                           <td className="ps-4 py-3">
@@ -311,11 +301,11 @@ function ReportChangePackage() {
 
           {/* 1. วันที่ชำระเงิน */}
           <div className="mb-4">
-            <label className="form-label small fw-bold text-dark">
+            <label htmlFor="reportchangepackage-field-1" className="form-label small fw-bold text-dark">
               วันที่ชำระเงิน
             </label>
 
-            <input
+            <input id="reportchangepackage-field-1"
               onChange={(e) => setPayDate(e.target.value)}
               value={payDate}
               className="form-control minimal-input"
@@ -325,11 +315,11 @@ function ReportChangePackage() {
 
           {/* 2. เวลาที่โอน */}
           <div className="mb-4">
-            <label className="form-label small fw-bold text-dark">
+            <label htmlFor="reportchangepackage-field-2" className="form-label small fw-bold text-dark">
               เวลาที่โอน
             </label>
             <div className="d-flex align-items-center gap-3">
-              <select
+              <select id="reportchangepackage-field-2"
                 value={payHour}
                 onChange={(e) => setPayHour(e.target.value)}
                 className="form-select minimal-input text-center cursor-pointer"
@@ -365,10 +355,10 @@ function ReportChangePackage() {
 
           {/* 3. หมายเหตุ */}
           <div className="mb-5">
-            <label className="form-label small fw-bold text-dark">
+            <label htmlFor="reportchangepackage-field-3" className="form-label small fw-bold text-dark">
               หมายเหตุ <span className="fw-normal text-muted">(ถ้ามี)</span>
             </label>
-            <input
+            <input id="reportchangepackage-field-3"
               onChange={(e) => setRemark(e.target.value)}
               className="form-control minimal-input"
               placeholder="เพิ่มหมายเหตุ..."

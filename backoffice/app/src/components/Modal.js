@@ -1,3 +1,4 @@
+// ไฟล์นี้มีสำเนาเหมือนกันทั้ง web/app และ backoffice/app — แก้ที่หนึ่งต้องแก้ให้เหมือนกันอีกที่
 function Modal(props) {
   let modalSize = "modal-dialog";
 
@@ -19,7 +20,7 @@ function Modal(props) {
               <h5 className="modal-title" id={`${props.id}-title`}>
                 {props.title}
               </h5>
-              <button
+              <button
                 type="button"
                 className="btn-close btnClose"
                 data-dismiss="modal"

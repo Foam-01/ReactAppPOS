@@ -1,5 +1,9 @@
 import Template from "../components/Template";
+import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
+import usePagedList from "../utils/usePagedList";
+import { SearchBox, Pagination } from "../components/ListToolbar";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import Modal from "../components/Modal";
@@ -9,6 +13,7 @@ import * as dayjs from "dayjs";
 
  function ReportStock() {
   const [stocks, setStocks] = useState([]);
+  const list = usePagedList(stocks, (s) => `${s.result?.name} ${s.result?.barcode}`);
   const [currentStock, setCurrentStock] = useState({});
 
   useEffect(() => {
@@ -27,7 +32,7 @@ import * as dayjs from "dayjs";
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
       });
     }
@@ -36,15 +41,17 @@ import * as dayjs from "dayjs";
   return (
     <>
       <Template>
-        {/* ปรับ Card ให้ดูทันสมัยด้วยเงาจางๆ และขอบมนพรีเมียม */}
+        <PageHeader
+          eyebrow="รายงาน / สต็อก"
+          title="รายงานสต็อกคงเหลือ"
+          description="ตรวจยอดรับเข้า ขายออก และคงเหลือของสินค้าแต่ละรายการ"
+          count={`${list.filtered.length.toLocaleString("th-TH")} รายการ`}
+        />
+        <FilterBar>
+          <SearchBox className="fb-search" value={list.search} onChange={list.setSearch} placeholder="ค้นหาชื่อสินค้าหรือบาร์โค้ด" />
+          {list.search && <FilterBarClear onClick={() => list.setSearch("")} />}
+        </FilterBar>
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          <div className="card-header bg-white py-3 border-bottom border-light">
-            <div className="card-title h5 mb-0 fw-bold text-primary">
-              <i className="fa-solid fa-boxes me-2"></i>
-              รายงานตรวจสอบสต็อกสินค้าคงเหลือ
-            </div>
-          </div>
-
           <div className="card-body p-0">
             {" "}
             {/* ปรับ Padding เป็น 0 เพื่อให้ตารางชิดขอบดู Clean */}
@@ -52,7 +59,7 @@ import * as dayjs from "dayjs";
               <table className="table table-hover align-middle mb-0">
                 <thead className="table-light text-muted small fw-bold">
                   <tr>
-                    <th className="py-3 ps-4">Barcode</th>
+                    <th className="py-3 ps-4">บาร์โค้ด</th>
                     <th className="py-3">รายการสินค้า</th>
                     <th className="py-3 text-end">รับเข้า</th>
                     <th className="py-3 text-end">ขายออก</th>
@@ -60,8 +67,8 @@ import * as dayjs from "dayjs";
                   </tr>
                 </thead>
                 <tbody>
-                  {stocks.length > 0 ? (
-                    stocks.map((item, index) => (
+                  {list.pageItems.length > 0 ? (
+                    list.pageItems.map((item, index) => (
                       <tr key={index}>
                         <td className="ps-4 font-monospace small text-muted">
                           {item.result.barcode}
@@ -70,24 +77,28 @@ import * as dayjs from "dayjs";
                           {item.result.name}
                         </td>
                         <td className="text-end text-success fw-medium">
-                          <a
+                          <button
+                            type="button"
                             onClick={(e) => setCurrentStock(item)}
                             data-toggle="modal"
                             data-target="#modalStockIn"
                             className="btn btn-Link text-success"
+                            aria-label={`ดูรายการรับเข้า ${item.result.name}`}
                           >
                             {item.stockIn.toLocaleString()}
-                          </a>
+                          </button>
                         </td>
                         <td className="text-end text-danger fw-medium">
-                          <a
+                          <button
+                            type="button"
                             onClick={(e) => setCurrentStock(item)}
                             data-toggle="modal"
                             data-target="#modalStockOut"
                             className="btn btn-Link text-danger"
+                            aria-label={`ดูรายการขายออก ${item.result.name}`}
                           >
                             {item.stockOut.toLocaleString()}
-                          </a>
+                          </button>
                         </td>
                         <td className="text-end pe-4">
                           <span
@@ -106,12 +117,13 @@ import * as dayjs from "dayjs";
                   ) : (
                     <tr>
                       <td colSpan="5">
-<EmptyState icon="fa-box-open" text="ไม่พบข้อมูลสต็อกสินค้า" />
+<EmptyState icon="fa-box-open" text={list.search ? "ไม่พบรายการที่ค้นหา" : "ไม่พบข้อมูลสต็อกสินค้า"} />
 </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+<Pagination page={list.page} totalPages={list.totalPages} total={list.filtered.length} onChange={list.setPage} />
             </div>
           </div>
         </div>
@@ -131,7 +143,7 @@ import * as dayjs from "dayjs";
             {/* เพิ่ม sticky-top เพื่อให้หัวตารางค้างไว้ด้านบนเสมอ */}
             <thead className="table-light text-muted small fw-bold sticky-top">
               <tr>
-                <th className="py-3 ps-3 border-0">Barcode</th>
+                <th className="py-3 ps-3 border-0">บาร์โค้ด</th>
                 <th className="py-3 border-0">รายการสินค้า</th>
                 <th className="py-3 text-end border-0">จำนวนรับเข้า</th>
                 <th className="py-3 text-center border-0 pe-3">
@@ -187,7 +199,7 @@ import * as dayjs from "dayjs";
             {/* ส่วนหัวตาราง (ทำให้ติดอยู่กับที่เวลาเลื่อน - Sticky Header) */}
             <thead className="table-light text-muted small fw-bold sticky-top">
               <tr className="small text-uppercase fw-bold text-muted">
-                <th className="py-3 ps-3 border-0">Barcode</th>
+                <th className="py-3 ps-3 border-0">บาร์โค้ด</th>
                 <th className="py-3 border-0">รายการสินค้า</th>
                 <th className="py-3 text-end border-0">จำนวนที่ขาย</th>
                 <th className="py-3 text-center border-0 pe-3">

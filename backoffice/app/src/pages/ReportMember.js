@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
 import Template from "./Template";
+import { SearchBox } from "../components/ListToolbar";
+import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 
 function ReportMember() {
   const [members, setMembers] = useState([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -25,37 +29,32 @@ function ReportMember() {
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: e.message,
+        text: getErrorMessage(e),
         icon: "error",
         timer: 2000,
       });
     }
   };
 
+  // ค้นหาฝั่งหน้าเว็บจากรายการที่โหลดแล้ว
+  const keyword = search.trim().toLowerCase();
+  const filtered = keyword
+    ? members.filter((item) => `${item.name} ${item.phone} ${item.package?.name}`.toLowerCase().includes(keyword))
+    : members;
+
   return (
     <Template>
+      <PageHeader
+        eyebrow="รายงาน / สมัครใช้บริการ"
+        title="รายชื่อสมาชิก"
+        description="รายชื่อร้านค้าที่สมัครใช้บริการพร้อมแพ็กเกจล่าสุด"
+        count={`${filtered.length.toLocaleString("th-TH")} ราย`}
+      />
+      <FilterBar>
+        <SearchBox className="fb-search" value={search} onChange={setSearch} placeholder="ค้นหาชื่อ เบอร์โทร หรือแพ็กเกจ" />
+        {search && <FilterBarClear onClick={() => setSearch("")} />}
+      </FilterBar>
       <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-        {/* Card Header แบบมีรายละเอียดและมีมิติ */}
-        <div className="card-header bg-white py-4 border-0 d-flex align-items-center">
-          <div
-            className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-            style={{ width: "50px", height: "50px" }}
-          >
-            <i className="fa-solid fa-users fs-5"></i>
-          </div>
-          <div>
-            <h5
-              className="mb-1 fw-bold text-dark"
-              style={{ letterSpacing: "0.5px" }}
-            >
-              รายชื่อสมาชิก
-            </h5>
-            <small className="text-muted fw-medium">
-              รายชื่อสมาชิกและข้อมูลแพ็กเกจล่าสุดในระบบ
-            </small>
-          </div>
-        </div>
-
         {/* Card Body */}
         <div className="card-body p-0">
           <div className="table-responsive">
@@ -89,8 +88,8 @@ function ReportMember() {
                 </tr>
               </thead>
               <tbody className="border-top-0">
-                {members?.length > 0 ? (
-                  members.map((item, index) => (
+                {filtered.length > 0 ? (
+                  filtered.map((item, index) => (
                     <tr key={index}>
                       <td className="ps-4 py-3">
                         <div className="d-flex align-items-center">

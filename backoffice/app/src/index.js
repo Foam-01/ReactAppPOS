@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -7,13 +7,14 @@ import reportWebVitals from './reportWebVitals';
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Home from './pages/Home';
-import ReportMember from './pages/ReportMember';
-import ReportChangePackage from './pages/ReportChangePackage';
-import ReportSumSalePerDay from './pages/ReportSumSalePerDay';
-import ReportSumsalePerMonth from './pages/ReportSumSalePerMonth';
-import ReportSumsalePerYear from './pages/ReportSumSalePerYear';
-import Admin from './pages/Admin';
+// แยกไฟล์ JS ตามหน้า (code splitting) โหลดเมื่อเข้าหน้านั้นจริง
+const Home = lazy(() => import('./pages/Home'));
+const ReportMember = lazy(() => import('./pages/ReportMember'));
+const ReportChangePackage = lazy(() => import('./pages/ReportChangePackage'));
+const ReportSumSalePerDay = lazy(() => import('./pages/ReportSumSalePerDay'));
+const ReportSumsalePerMonth = lazy(() => import('./pages/ReportSumSalePerMonth'));
+const ReportSumsalePerYear = lazy(() => import('./pages/ReportSumSalePerYear'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<RouterProvider router={router} />);
+root.render(
+  <Suspense fallback={null}>
+    <RouterProvider router={router} />
+  </Suspense>
+);
 
 reportWebVitals();

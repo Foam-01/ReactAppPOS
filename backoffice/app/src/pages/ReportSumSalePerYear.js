@@ -1,13 +1,17 @@
 import Template from "./Template";
+import { SearchBox } from "../components/ListToolbar";
+import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
 import axios from "axios";
 import config from "../config";
 import Swal from "../utils/swal";
+import { getErrorMessage } from "../utils/error";
 import { useState, useEffect } from "react";
 import Modal from "../components/Modal";
 import * as dayjs from "dayjs";
 
 function ReportSumSalePerYear() {
   const [results, setResults] = useState([]);
+  const [search, setSearch] = useState("");
   const [selectedResult, setSelectedResult] = useState({});
 
   useEffect(() => {
@@ -24,7 +28,10 @@ const fetchData = async () => {
       )
       .then((res) => {
         if (res.data.message === "success") {
-          setResults(res.data.results);
+          // เรียงปีล่าสุดไว้บนสุด
+          setResults(
+            [...res.data.results].sort((a, b) => Number(b.year) - Number(a.year)),
+          );
         }
       })
       .catch((err) => {
@@ -34,38 +41,33 @@ const fetchData = async () => {
   } catch (e) {
     Swal.fire({
       title: "เกิดข้อผิดพลาด",
-      text: e.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+      text: getErrorMessage(e),
       icon: "error",
     });
   }
 }; 
 
+  // ค้นหาฝั่งหน้าเว็บจากรายการที่โหลดแล้ว
+  const keyword = search.trim().toLowerCase();
+  const filtered = keyword
+    ? results.filter((item) => `${item.year}`.toLowerCase().includes(keyword))
+    : results;
+
   return (
     <>
       <Template>
         <div className="p-4 bg-light min-vh-100">
+          <PageHeader
+            eyebrow="รายงาน / รายได้รายปี"
+            title="รายได้รายปี"
+            description="สรุปรายได้ค่าบริการรวมของแต่ละปีพร้อมรายการชำระ"
+            count={`${filtered.length.toLocaleString("th-TH")} ปี`}
+          />
+          <FilterBar>
+            <SearchBox className="fb-search" value={search} onChange={setSearch} placeholder="ค้นหาปี" />
+            {search && <FilterBarClear onClick={() => setSearch("")} />}
+          </FilterBar>
           <div className="card border-0 rounded-4 shadow-custom overflow-hidden">
-            {/* Card Header แบบพรีเมียม */}
-            <div className="card-header bg-white py-4 border-0 d-flex align-items-center">
-              <div
-                className="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center rounded-circle me-3"
-                style={{ width: "50px", height: "50px" }}
-              >
-                <i className="fa-solid fa-calendar-check fs-5"></i>
-              </div>
-              <div>
-                <h5
-                  className="mb-1 fw-bold text-dark"
-                  style={{ letterSpacing: "0.5px" }}
-                >
-                  รายงานรายได้รายปี
-                </h5>
-                <small className="text-muted fw-medium">
-                  สรุปภาพรวมรายได้ทั้งหมดที่เกิดขึ้นในแต่ละปี
-                </small>
-              </div>
-            </div>
-
             {/* Card Body: ตารางหลัก */}
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -92,8 +94,8 @@ const fetchData = async () => {
                     </tr>
                   </thead>
                   <tbody className="border-top-0 bg-white">
-                    {results.length > 0 ? (
-                      results.map((item, index) => (
+                    {filtered.length > 0 ? (
+                      filtered.map((item, index) => (
                         <tr key={index}>
                           {" "}
                           {/* 🌟 เพิ่ม key กันบั๊ก */}
@@ -206,7 +208,20 @@ const fetchData = async () => {
               <tbody className="border-top-0 bg-white">
                 {/* 🌟 ปรับเงื่อนไขเช็ค array ให้คลีนขึ้น */}
                 {selectedResult?.results?.length > 0 ? (
-                  selectedResult.results.map((item, index) => (
+                  // เรียงรายการล่าสุดไว้บนสุด
+                  [...selectedResult.results]
+                    .sort((a, b) => {
+                      // เรียงตามวันที่ชำระ + เวลาชำระ (ไม่มี payDate ไว้ล่างสุด)
+                      const payTime = (x) =>
+                        x.payDate
+                          ? dayjs(x.payDate)
+                              .hour(Number(x.payHour) || 0)
+                              .minute(Number(x.payMinute) || 0)
+                              .valueOf()
+                          : -Infinity;
+                      return payTime(b) - payTime(a);
+                    })
+                    .map((item, index) => (
                     <tr key={index}>
                       <td className="ps-4 py-3 text-dark fw-medium">
                         <i className="fa-regular fa-calendar-plus text-muted me-2"></i>
