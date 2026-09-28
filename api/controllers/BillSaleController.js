@@ -283,13 +283,12 @@ router.get("/billSale/lastBill", service.isMember, async (req, res) => {
 
 router.get("/billSale/billToday", service.isMember, async (req, res) => {
   try {
-    
+    // วันนี้ = [00:00 วันนี้, 00:00 พรุ่งนี้) · เดิมปลายช่วงเป็น 23:59:59.059
+    // บิลที่ชำระช่วง .060–.999 ของวินาทีสุดท้ายจึงหายจากรายการ
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-
-    const now = new Date();
-    now.setHours(23, 59, 59, 59);
-
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
 
     const results = await BillSaleModel.findAll({
       where: {
@@ -297,10 +296,8 @@ router.get("/billSale/billToday", service.isMember, async (req, res) => {
         userId: service.getMemberId(req),
         // เปลี่ยนจาก createdAt เป็น updatedAt
         updatedAt: {
-          [Op.between]: [
-            startDate, // ไม่ต้องใช้ .toISOString() ก็ได้ Sequelize จัดการให้ครับ
-            now,
-          ],
+          [Op.gte]: startDate,
+          [Op.lt]: endDate,
         },
       },
       order: [["id", "DESC"]],
@@ -390,11 +387,10 @@ router.get(
         where: {
           userId: service.getMemberId(req), // กรองเฉพาะของผู้ใช้งานนั้นๆ
           status: BILL_STATUS.PAY,
+          // ทั้งเดือน = [วันที่ 1, วันที่ 1 ของเดือนถัดไป) รวมเศษมิลลิวินาทีท้ายวัน
           createdAt: {
-            [Op.between]: [
-              new Date(y, m - 1, 1, 0, 0, 0),
-              new Date(y, m - 1, daysInMonth, 23, 59, 59),
-            ],
+            [Op.gte]: new Date(y, m - 1, 1),
+            [Op.lt]: new Date(y, m, 1),
           },
         },
         order: [["id", "ASC"]],
@@ -414,15 +410,6 @@ router.get(
 
       for (const result of results) {
         const d = new Date(result.createdAt);
-        // ช่วงเดิมของแต่ละวันคือ 00:00:00 ถึง 23:59:59 (ไม่รวมเศษมิลลิวินาทีหลัง 23:59:59)
-        if (
-          d.getHours() === 23 &&
-          d.getMinutes() === 59 &&
-          d.getSeconds() === 59 &&
-          d.getMilliseconds() > 0
-        ) {
-          continue;
-        }
         const day = arr[d.getDate() - 1];
         day.results.push(result);
 

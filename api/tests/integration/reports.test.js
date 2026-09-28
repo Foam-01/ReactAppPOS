@@ -72,6 +72,49 @@ describe("รายงานบิล", () => {
   });
 });
 
+describe("B5/B6 ขอบเวลาหลังแก้", () => {
+  test("B5: 23:59:59.999 ของวันกลางเดือนนับในวันนั้น ไม่ใช่เฉพาะวันสิ้นเดือน", async () => {
+    await sellBill(shop.token, [product.id]);
+    const bill = await BillSaleModel.findOne();
+    await setBillTime(bill.id, "createdAt", new Date(2026, 2, 10, 23, 59, 59, 999));
+    const res = await api().get("/billSale/listByYearAndMonth/2026/3").set(auth(shop.token));
+    expect(res.body.results[9].sum).toBe(100);
+    expect(res.body.results[10].sum).toBe(0);
+  });
+
+  test("B5: วันสุดท้ายของเดือน 23:59:59.999 นับ · 00:00:00.000 ของเดือนถัดไปไม่นับ", async () => {
+    await sellBill(shop.token, [product.id]);
+    await sellBill(shop.token, [product.id]);
+    const [a, b] = await BillSaleModel.findAll({ order: [["id", "ASC"]] });
+    await setBillTime(a.id, "createdAt", new Date(2026, 2, 31, 23, 59, 59, 999));
+    await setBillTime(b.id, "createdAt", new Date(2026, 3, 1, 0, 0, 0, 0));
+    const march = await api().get("/billSale/listByYearAndMonth/2026/3").set(auth(shop.token));
+    const april = await api().get("/billSale/listByYearAndMonth/2026/4").set(auth(shop.token));
+    expect(march.body.results[30].sum).toBe(100);
+    expect(march.body.results.reduce((t, d) => t + d.results.length, 0)).toBe(1);
+    expect(april.body.results[0].sum).toBe(100);
+  });
+
+  test("B6: บิลเที่ยงคืนพรุ่งนี้ (00:00:00.000) ไม่อยู่ใน billToday", async () => {
+    await sellBill(shop.token, [product.id]);
+    const bill = await BillSaleModel.findOne();
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    await setBillTime(bill.id, "updatedAt", tomorrow);
+    expect((await api().get("/billSale/billToday").set(auth(shop.token))).body.results).toHaveLength(0);
+  });
+
+  test("B6: บิลเที่ยงคืนวันนี้ (00:00:00.000) อยู่ใน billToday", async () => {
+    await sellBill(shop.token, [product.id]);
+    const bill = await BillSaleModel.findOne();
+    const midnight = new Date();
+    midnight.setHours(0, 0, 0, 0);
+    await setBillTime(bill.id, "updatedAt", midnight);
+    expect((await api().get("/billSale/billToday").set(auth(shop.token))).body.results).toHaveLength(1);
+  });
+});
+
 describe("รายงานสต็อก", () => {
   test("stockIn/stockOut ไม่นับซ้ำเมื่อมีหลายแถว", async () => {
     await api().post("/stock/save").set(auth(shop.token)).send({ productId: product.id, qty: 10 }).expect(200);

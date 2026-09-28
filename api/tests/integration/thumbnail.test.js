@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { api, conn } = require("../helpers/db");
+const { api, conn, resetDb } = require("../helpers/db");
 
 const UPLOADS = path.join(__dirname, "..", "..", "uploads");
 const NAME = "test-thumb-src.png";
@@ -11,6 +11,8 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
+  // รอให้ sync() ของ model (ที่เริ่มตอน require) เสร็จก่อน ไม่งั้น afterAll ปิด connection ตัดกลางคัน
+  await resetDb();
   const sharp = require("sharp");
   await sharp({ create: { width: 1024, height: 1024, channels: 3, background: "#e33" } })
     .png().toFile(path.join(UPLOADS, NAME));
