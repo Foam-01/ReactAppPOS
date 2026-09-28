@@ -7,3 +7,6 @@ build/
 api/uploads/*
 !api/uploads/.gitkeep
 
+
+# git worktree ที่ Claude สร้างไว้ทดลองงาน (ไม่ใช่โค้ดของโปรเจกต์)
+.claude/worktrees/
