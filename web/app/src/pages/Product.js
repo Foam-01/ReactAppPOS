@@ -610,7 +610,13 @@ function Product() {
                       className="card-img-top"
                       loading="lazy"
                       decoding="async"
-                      src={config.api_path + "/uploads/" + item.imageName}
+                      src={config.api_path + "/uploads/thumb/" + item.imageName}
+                      onError={(e) => {
+                        // รูปย่อไม่ได้ → ใช้รูปต้นฉบับ
+                        if (e.target.dataset.fallback) return;
+                        e.target.dataset.fallback = "1";
+                        e.target.src = config.api_path + "/uploads/" + item.imageName;
+                      }}
                       alt={item.imageName}
                       style={{
                         width: "100%",

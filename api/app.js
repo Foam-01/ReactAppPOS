@@ -67,13 +67,18 @@ app.use(
 );
 
 // ไฟล์อัปโหลด: ห้ามเบราว์เซอร์เดาชนิดไฟล์ และห้ามรันสคริปต์
+const uploadHeaders = (req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+  next();
+};
+
+// รูปย่อ WebP สำหรับการ์ดสินค้า (ต้องอยู่ก่อน static)
+app.get("/uploads/thumb/:name", uploadHeaders, require("./controllers/thumbnail"));
+
 app.use(
   "/uploads",
-  (req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
-    next();
-  },
+  uploadHeaders,
   // ชื่อไฟล์รูปมี timestamp ไม่ซ้ำกัน ไฟล์เดิมไม่ถูกแก้ จึง cache ได้นาน
   express.static("uploads", {
     dotfiles: "deny",

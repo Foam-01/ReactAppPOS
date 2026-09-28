@@ -454,17 +454,26 @@ function Sale() {
                               loading="lazy"
                               decoding="async"
                               style={{ height: "110px", objectFit: "cover" }}
+                              width="240"
+                              height="110"
                               src={
                                 item.productlmages?.[0]?.imageName
                                   ? config.api_path +
-                                    "/uploads/" +
+                                    "/uploads/thumb/" +
                                     item.productlmages[0].imageName
                                   : NO_IMAGE
                               }
+                              // รูปย่อไม่ได้ → ลองรูปต้นฉบับ → ไม่ได้อีกใช้ NO_IMAGE
                               onError={(e) => {
-                                if (e.target.dataset.fallback) return;
-                                e.target.dataset.fallback = "1";
-                                e.target.src = NO_IMAGE;
+                                const img = e.target;
+                                const name = item.productlmages?.[0]?.imageName;
+                                if (!img.dataset.fallback && name) {
+                                  img.dataset.fallback = "original";
+                                  img.src = config.api_path + "/uploads/" + name;
+                                } else if (img.dataset.fallback !== "none") {
+                                  img.dataset.fallback = "none";
+                                  img.src = NO_IMAGE;
+                                }
                               }}
                               alt={item.name}
                             />
