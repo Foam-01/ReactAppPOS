@@ -221,3 +221,21 @@ describe("B1/B2 edge cases หลังแก้", () => {
     expect(await BillSaleModel.count({ where: { userId: shop2.member.id, status: "pay" } })).toBe(2);
   });
 });
+
+describe("B7: ตัวเลขบิลที่แถบซ้ายตรงกับโควตา", () => {
+  test("countBill เท่ากับจำนวนที่ใช้ตรวจโควตาพอดี ตอนถูกบล็อก", async () => {
+    const pkg = await PackageModel.create({ name: "Two", bill_amount: 2, price: 0 });
+    const s = await createMember({ packageId: pkg.id });
+    const p = await createProduct(s.member.id);
+    await sellBill(s.token, [p.id]);
+    await sellBill(s.token, [p.id]);
+    expect((await sellBill(s.token, [p.id])).status).toBe(403); // บิลที่ 3 เปิดค้าง
+    const res = await api().get("/package/countBill").set(auth(s.token));
+    expect(res.body.totalBill).toBe(2);
+  });
+
+  test("บิลเปิดว่างจากการเข้าหน้าขายไม่ทำให้ตัวเลขเพิ่ม", async () => {
+    await api().get("/billSale/openBill").set(auth(shop.token));
+    expect((await api().get("/package/countBill").set(auth(shop.token))).body.totalBill).toBe(0);
+  });
+});

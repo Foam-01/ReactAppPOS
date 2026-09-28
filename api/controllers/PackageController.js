@@ -6,6 +6,7 @@ const Service = require("./Service");
 const ChangePackageModel = require("../models/ChangePackageModel");
 const BillSaleModel = require("../models/BillSaleModel");
 const { Op } = require("sequelize");
+const { BILL_STATUS } = require("../constants");
 
 router.get("/package/list", async (req, res) => {
   try {
@@ -66,7 +67,7 @@ router.get("/package/countBill", Service.isMember, async (req, res) => {
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // สร้างวันที่สิ้นสุดของเดือนปัจจุบัน (วันสุดท้าย เวลา 23:59:59)
+    // สร้างวันที่สิ้นสุดของเดือนปัจจุบัน (วันสุดท้าย เวลา 23:59:59.999)
     const endDate = new Date(
       now.getFullYear(),
       now.getMonth() + 1,
@@ -74,12 +75,15 @@ router.get("/package/countBill", Service.isMember, async (req, res) => {
       23,
       59,
       59,
+      999,
     );
 
     // นับในฐานข้อมูล ไม่ต้องดึงทุกแถวมานับ .length
+    // เฉพาะบิลที่ชำระแล้ว (ไม่นับบิลที่เปิดค้าง) · กติกาเดียวกับโควตาใน /billSale/endSale
     const totalBill = await BillSaleModel.count({
       where: {
         userId: Service.getMemberId(req),
+        status: BILL_STATUS.PAY,
         createdAt: {
           [Op.between]: [startDate, endDate], // ดึงเฉพาะบิลที่เกิดในเดือนนี้เท่านั้น
         },
