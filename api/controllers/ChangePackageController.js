@@ -21,19 +21,48 @@ router.get("/changePackage/list", Service.isAdmin, async (req, res) => {
   }
 });
 
+// เลขจำนวนเต็มในช่วง [min, max] (รับทั้ง number และข้อความตัวเลข) ไม่ผ่านคืน null
+const intInRange = (value, min, max) => {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= min && n <= max ? n : null;
+};
+
+// ปี/เดือนของรายงาน: ช่วงเดียวกับ /billSale/listByYearAndMonth
+const YEAR_MIN = 2000;
+const YEAR_MAX = 2100;
+const BAD_PERIOD = { message: "ปี/เดือนไม่ถูกต้อง" };
+
 router.post("/changePackage/saveChange", Service.isAdmin, async (req, res) => {
   try {
-    await ChangePackageModel.update(
+    const id = Service.toPositiveInt(req.body.id);
+    const payDate = req.body.payDate;
+    const payHour = intInRange(req.body.payHour, 0, 23);
+    const payMinute = intInRange(req.body.payMinute, 0, 59);
+    const validDate =
+      (typeof payDate === "string" || payDate instanceof Date) &&
+      !Number.isNaN(new Date(payDate).getTime());
+    if (!id || !validDate || payHour === null || payMinute === null) {
+      return res.status(400).send({ message: "ข้อมูลการชำระเงินไม่ถูกต้อง" });
+    }
+    if (req.body.remark !== undefined && typeof req.body.remark !== "string") {
+      return res.status(400).send({ message: "หมายเหตุไม่ถูกต้อง" });
+    }
+
+    const [updated] = await ChangePackageModel.update(
       {
-        payDate: req.body.payDate,
-        payHour: req.body.payHour,
-        payMinute: req.body.payMinute,
+        payDate,
+        payHour,
+        payMinute,
         payRemark: req.body.remark,
       },
       {
-        where: { id: req.body.id },
+        where: { id },
       },
     );
+    if (!updated) {
+      return res.status(404).send({ message: "ไม่พบคำขอเปลี่ยนแพ็กเกจ" });
+    }
     res.send({ message: "success" });
   } catch (e) {
     Service.sendError(res, e);
@@ -76,8 +105,9 @@ router.post(
   Service.isAdmin,
   async (req, res) => {
     try {
-      let y = parseInt(req.body.year);
-      let m = parseInt(req.body.month);
+      const y = intInRange(req.body.year, YEAR_MIN, YEAR_MAX);
+      const m = intInRange(req.body.month, 1, 12);
+      if (y === null || m === null) return res.status(400).send(BAD_PERIOD);
       let daysInMonth = new Date(y, m, 0).getDate();
 
       const results = await findPaidBetween(
@@ -104,7 +134,8 @@ router.post(
   Service.isAdmin,
   async (req, res) => {
     try {
-      let y = parseInt(req.body.year);
+      const y = intInRange(req.body.year, YEAR_MIN, YEAR_MAX);
+      if (y === null) return res.status(400).send(BAD_PERIOD);
 
       const results = await findPaidBetween(
         new Date(y, 0, 1),

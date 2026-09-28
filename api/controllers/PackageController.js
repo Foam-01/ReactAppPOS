@@ -98,9 +98,18 @@ router.get("/package/countBill", Service.isMember, async (req, res) => {
 
 router.get("/package/changePackage/:id", Service.isMember, async (req, res) => {
   try {
+    const packageId = Service.toPositiveInt(req.params.id);
+    if (!packageId) {
+      return res.status(400).send({ message: "รหัสแพ็กเกจไม่ถูกต้อง" });
+    }
+    const pkg = await PackageModel.findByPk(packageId, { attributes: ["id"] });
+    if (!pkg) {
+      return res.status(404).send({ message: "ไม่พบแพ็กเกจ" });
+    }
+
     const payload = {
       userId: Service.getMemberId(req),
-      packageId: req.params.id,
+      packageId: pkg.id,
     };
 
     await ChangePackageModel.create(payload);

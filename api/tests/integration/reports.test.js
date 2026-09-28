@@ -174,3 +174,67 @@ describe("แพ็กเกจ / รายงาน backoffice", () => {
     expect((await api().get("/package/changePackage/abc").set(auth(shop.token))).status).toBe(400);
   });
 });
+
+describe("B8/B9 edge cases หลังแก้", () => {
+  const pendingRequest = async () => {
+    const pro = await PackageModel.create({ name: "Pro", bill_amount: 1000, price: 499 });
+    await api().get(`/package/changePackage/${pro.id}`).set(auth(shop.token)).expect(200);
+    return ChangePackageModel.findOne();
+  };
+
+  test("B8: saveChange รับค่าแบบที่หน้า backoffice ส่งจริง (วันที่ YYYY-MM-DD, ชั่วโมง/นาทีเป็นข้อความ)", async () => {
+    const req = await pendingRequest();
+    const { token } = await createAdmin();
+    await api().post("/changePackage/saveChange").set(auth(token))
+      .send({ id: req.id, payDate: "2026-09-28", payHour: "8", payMinute: 0, remark: "" }).expect(200);
+    await req.reload();
+    expect(req.payDate).not.toBeNull();
+    expect(Number(req.payHour)).toBe(8);
+  });
+
+  test.each([
+    ["ชั่วโมง 24", { payHour: 24 }],
+    ["นาที 60", { payMinute: 60 }],
+    ["ชั่วโมงติดลบ", { payHour: -1 }],
+    ["วันที่ผิด", { payDate: "not-a-date" }],
+    ["ไม่มีวันที่", { payDate: undefined }],
+    ["หมายเหตุเป็น object", { remark: { $gt: "" } }],
+  ])("B8: saveChange %s → 400 และไม่บันทึก", async (_, override) => {
+    const req = await pendingRequest();
+    const { token } = await createAdmin();
+    const body = { id: req.id, payDate: "2026-09-28", payHour: 10, payMinute: 30, remark: "", ...override };
+    expect((await api().post("/changePackage/saveChange").set(auth(token)).send(body)).status).toBe(400);
+    await req.reload();
+    expect(req.payDate).toBeNull();
+  });
+
+  test("B8: saveChange id ที่ไม่มีอยู่ → 404", async () => {
+    const { token } = await createAdmin();
+    const res = await api().post("/changePackage/saveChange").set(auth(token))
+      .send({ id: 999999, payDate: "2026-09-28", payHour: 10, payMinute: 0 });
+    expect(res.status).toBe(404);
+  });
+
+  test.each([["1999", "1"], ["2101", "1"], ["2026", "0"], ["2026", "13"], ["2026.5", "1"]])(
+    "B8: reportSumSalePerDay ปี %s เดือน %s → 400",
+    async (year, month) => {
+      const { token } = await createAdmin();
+      const res = await api().post("/changePackage/reportSumSalePerDay").set(auth(token)).send({ year, month });
+      expect(res.status).toBe(400);
+    },
+  );
+
+  test("B8: รายงานยังทำงานกับค่าปกติ (ข้อความตัวเลขแบบที่หน้าเว็บส่ง)", async () => {
+    const { token } = await createAdmin();
+    const day = await api().post("/changePackage/reportSumSalePerDay").set(auth(token)).send({ year: "2026", month: "2" });
+    expect(day.status).toBe(200);
+    expect(day.body.results).toHaveLength(28);
+    const month = await api().post("/changePackage/reportSumSalePerMonth").set(auth(token)).send({ year: 2026 });
+    expect(month.body.results).toHaveLength(12);
+  });
+
+  test.each(["0", "-3", "1.5"])("B9: id แพ็กเกจ %s → 400", async (id) => {
+    expect((await api().get(`/package/changePackage/${id}`).set(auth(shop.token))).status).toBe(400);
+    expect(await ChangePackageModel.count()).toBe(0);
+  });
+});
