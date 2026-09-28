@@ -146,3 +146,78 @@ describe("บั๊กที่พบ (ยืนยันด้วยเทส)"
     expect(await BillSaleModel.count({ where: { userId: small.member.id, status: "pay" } })).toBe(1);
   });
 });
+
+describe("B1/B2 edge cases หลังแก้", () => {
+  test("B1: บิลที่ยังเปิดอยู่ยังแก้จำนวนและลบรายการได้ตามปกติ", async () => {
+    await api().get("/billSale/openBill").set(auth(shop.token));
+    await addItem(shop.token, product.id);
+    const detail = await BillSaleDetailModel.findOne();
+    await api().post("/billSale/updateQty").set(auth(shop.token)).send({ id: detail.id, qty: 4 }).expect(200);
+    await detail.reload();
+    expect(Number(detail.qty)).toBe(4);
+    await api().delete(`/billSale/deleteItem/${detail.id}`).set(auth(shop.token)).expect(200);
+    expect(await BillSaleDetailModel.count()).toBe(0);
+  });
+
+  test("B1: id ไม่ใช่ตัวเลข / ไม่มีอยู่ → 404 ไม่ใช่ 500", async () => {
+    await api().get("/billSale/openBill").set(auth(shop.token));
+    for (const id of ["abc", "999999", "-1"]) {
+      expect((await api().delete(`/billSale/deleteItem/${id}`).set(auth(shop.token))).status).toBe(404);
+      expect((await api().post("/billSale/updateQty").set(auth(shop.token)).send({ id, qty: 2 })).status).toBe(404);
+    }
+  });
+
+  test("B1: แก้รายการของบิลที่ปิดแล้ว ขณะมีบิลใหม่เปิดอยู่ → ยังแก้ไม่ได้", async () => {
+    await sellBill(shop.token, [product.id]);
+    const paidDetail = await BillSaleDetailModel.findOne();
+    await api().get("/billSale/openBill").set(auth(shop.token));
+    await addItem(shop.token, product.id);
+    expect((await api().post("/billSale/updateQty").set(auth(shop.token)).send({ id: paidDetail.id, qty: 9 })).status).toBe(404);
+    await paidDetail.reload();
+    expect(Number(paidDetail.qty)).toBe(1);
+  });
+
+  test("B2: บิลเดือนก่อนไม่นับในโควตาเดือนนี้", async () => {
+    const pkg = await PackageModel.create({ name: "Tiny", bill_amount: 1, price: 0 });
+    const small = await createMember({ packageId: pkg.id });
+    const p = await createProduct(small.member.id);
+    await sellBill(small.token, [p.id]);
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    await conn.query(`UPDATE "billSales" SET "createdAt" = :d WHERE "userId" = :u`, {
+      replacements: { d: lastMonth, u: small.member.id },
+    });
+    expect((await sellBill(small.token, [p.id])).status).toBe(200);
+  });
+
+  test("B2: แพ็กเกจไม่กำหนดจำนวนบิล (null) = ไม่จำกัด", async () => {
+    const pkg = await PackageModel.create({ name: "Unlimited", bill_amount: null, price: 0 });
+    const big = await createMember({ packageId: pkg.id });
+    const p = await createProduct(big.member.id);
+    for (let i = 0; i < 3; i++) expect((await sellBill(big.token, [p.id])).status).toBe(200);
+  });
+
+  test("B2: ครบโควตาแล้ว บิลยังเปิดอยู่พร้อมสินค้า และข้อความบอกให้อัปเกรด", async () => {
+    const pkg = await PackageModel.create({ name: "Tiny", bill_amount: 1, price: 0 });
+    const small = await createMember({ packageId: pkg.id });
+    const p = await createProduct(small.member.id);
+    await sellBill(small.token, [p.id]);
+    const res = await sellBill(small.token, [p.id]);
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/อัปเกรด/);
+    const open = await api().get("/billSale/currentBillInfo").set(auth(small.token));
+    expect(open.body.results.billSaleDetails).toHaveLength(1);
+  });
+
+  test("B2: ปิดการขายพร้อมกันจาก 2 เครื่องตอนเหลือโควตา 1 บิล → ผ่านได้แค่บิลเดียว", async () => {
+    const pkg = await PackageModel.create({ name: "Two", bill_amount: 2, price: 0 });
+    const shop2 = await createMember({ packageId: pkg.id });
+    const p = await createProduct(shop2.member.id);
+    await sellBill(shop2.token, [p.id]);
+    await api().get("/billSale/openBill").set(auth(shop2.token));
+    await addItem(shop2.token, p.id);
+    const results = await Promise.all([1, 2].map(() => api().get("/billSale/endSale").set(auth(shop2.token))));
+    expect(results.filter((r) => r.status === 200)).toHaveLength(1);
+    expect(await BillSaleModel.count({ where: { userId: shop2.member.id, status: "pay" } })).toBe(2);
+  });
+});

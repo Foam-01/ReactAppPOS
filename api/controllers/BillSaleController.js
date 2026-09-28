@@ -8,6 +8,8 @@ const BillSaleDetailModel = require("../models/BillSaleDetailModel");
 const { Op } = require("sequelize");
 const { BILL_STATUS } = require("../constants");
 const conn = require("../connect");
+const MemberModel = require("../models/MemberModel");
+const PackageModel = require("../models/PackageModel");
 
 // คอลัมน์สินค้าที่หน้าเว็บใช้ในรายการบิล (เดิมส่งทุกคอลัมน์รวม detail/cost ซ้ำทุกแถว)
 const PRODUCT_BRIEF = ["id", "barcode", "name"];
@@ -23,6 +25,28 @@ const withMemberLock = (memberId, work) =>
     });
     return work(t);
   });
+
+// แก้/ลบรายการได้เฉพาะในบิลที่ยังเปิดอยู่ของร้านตัวเอง (บิลที่ชำระแล้วห้ามแตะ)
+// ทำใต้ล็อกเดียวกับ endSale: บิลจะไม่ถูกปิดระหว่างกำลังแก้ · คืนจำนวนแถวที่เปลี่ยน
+const changeOpenBillItem = (memberId, detailId, change) =>
+  withMemberLock(memberId, async (t) => {
+    const openBills = await BillSaleModel.findAll({
+      attributes: ["id"],
+      where: { userId: memberId, status: BILL_STATUS.OPEN },
+      transaction: t,
+    });
+    if (openBills.length === 0) return 0;
+    return change({
+      where: {
+        id: detailId,
+        userId: memberId,
+        billSaleId: openBills.map((b) => b.id),
+      },
+      transaction: t,
+    });
+  });
+
+const ITEM_NOT_FOUND = { message: "ไม่พบรายการในบิลที่กำลังขาย" };
 
 router.get("/billSale/openBill", service.isMember, async (req, res) => {
   try {
@@ -127,12 +151,13 @@ router.get("/billSale/currentBillInfo", service.isMember, async (req, res) => {
 
 router.delete("/billSale/deleteItem/:id", service.isMember, async (req, res) => {
   try {
-    await BillSaleDetailModel.destroy({
-      where: {
-        id: req.params.id,
-        userId: service.getMemberId(req),
-      },
-    });
+    const detailId = service.toPositiveInt(req.params.id);
+    const deleted = detailId
+      ? await changeOpenBillItem(service.getMemberId(req), detailId, (opts) =>
+          BillSaleDetailModel.destroy(opts),
+        )
+      : 0;
+    if (!deleted) return res.status(404).send(ITEM_NOT_FOUND);
     res.send({ message: "success" });
   } catch (e) {
     service.sendError(res, e);
@@ -145,18 +170,14 @@ router.post("/billSale/updateQty", service.isMember, async (req, res) => {
     if (!qty) {
       return res.status(400).send({ message: "จำนวนไม่ถูกต้อง" });
     }
-    await BillSaleDetailModel.update(
-      {
-        qty: qty,
-      },
-      {
-        where: {
-          id: req.body.id,
-          userId: service.getMemberId(req),
-        },
-      },
-    );
-
+    const detailId = service.toPositiveInt(req.body.id);
+    const updated = detailId
+      ? await changeOpenBillItem(service.getMemberId(req), detailId, async (opts) => {
+          const [count] = await BillSaleDetailModel.update({ qty }, opts);
+          return count;
+        })
+      : 0;
+    if (!updated) return res.status(404).send(ITEM_NOT_FOUND);
     res.send({ message: "success" });
   } catch (e) {
     service.sendError(res, e);
@@ -180,7 +201,33 @@ router.get("/billSale/endSale", service.isMember, async (req, res) => {
             transaction: t,
           })
         : 0;
-      if (itemCount === 0) return false;
+      if (itemCount === 0) return "empty";
+
+      // โควตาบิลต่อเดือนของแพ็กเกจ: นับบิลที่ชำระแล้วในเดือนนี้ (ช่วงเดียวกับ /package/countBill)
+      // แพ็กเกจไม่มีกำหนด (bill_amount ว่างหรือ ≤ 0) = ไม่จำกัด
+      const member = await MemberModel.findByPk(memberId, {
+        attributes: ["id"],
+        include: { model: PackageModel, attributes: ["bill_amount"] },
+        transaction: t,
+      });
+      const quota = Number(member?.package?.bill_amount) || 0;
+      if (quota > 0) {
+        const now = new Date();
+        const paidThisMonth = await BillSaleModel.count({
+          where: {
+            userId: memberId,
+            status: BILL_STATUS.PAY,
+            createdAt: {
+              [Op.between]: [
+                new Date(now.getFullYear(), now.getMonth(), 1),
+                new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
+              ],
+            },
+          },
+          transaction: t,
+        });
+        if (paidThisMonth >= quota) return "quota";
+      }
 
       await BillSaleModel.update(
         // payDate: เวลาชำระจริง (เดิมคอลัมน์นี้ไม่เคยถูกบันทึก)
@@ -190,11 +237,16 @@ router.get("/billSale/endSale", service.isMember, async (req, res) => {
           transaction: t,
         },
       );
-      return true;
+      return "closed";
     });
 
-    if (!closed) {
+    if (closed === "empty") {
       return res.status(400).send({ message: "ไม่มีสินค้าในบิล" });
+    }
+    if (closed === "quota") {
+      return res.status(403).send({
+        message: "ใช้จำนวนบิลครบตามแพ็กเกจของเดือนนี้แล้ว กรุณาอัปเกรดแพ็กเกจเพื่อขายต่อ",
+      });
     }
 
     res.send({ message: "success" });
