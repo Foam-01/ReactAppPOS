@@ -26,7 +26,7 @@ function ReportChangePackage() {
   const [minutes] = useState(() => {
     let arr = [];
 
-    for (let i = 0; i < 59; i++) {
+    for (let i = 0; i <= 59; i++) {
       arr.push(i);
     }
 
@@ -35,8 +35,10 @@ function ReportChangePackage() {
 
   const [remark, setRemark] = useState("");
   const [payDate, setPayDate] = useState(() => {
-    const myDate = new Date();
-    return myDate.toISOString().split("T")[0];
+    // วันที่ตามเวลาเครื่อง (ไทย) · toISOString เป็น UTC จะได้เมื่อวานถ้าก่อน 07:00 น.
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   });
 
   const [payHour, setPayHour] = useState(() => {
