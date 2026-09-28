@@ -1,39 +1,25 @@
 import Template from "../components/Template";
-import usePagedList from "../utils/usePagedList";
+import useServerPagedList from "../utils/useServerPagedList";
 import { SearchBox, Pagination } from "../components/ListToolbar";
 import Swal from "../utils/swal";
 import { getErrorMessage } from "../utils/error";
-import axios from "axios";
-import config from "../config";
 import Modal from "../components/Modal";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EmptyState from "../components/EmptyState";
 import { PageHeader, FilterBar, FilterBarClear } from "../components/PageHeader";
 import * as dayjs from "dayjs";
 
 function BillSales() {
-  const [billSales, setBillSales] = useState([]);
-  const list = usePagedList(billSales, (b) => String(b.id));
-  const [selectBill, setSelectBill] = useState({});
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const res = await axios.get(config.api_path + "/billSale/list", config.headers());
-      if (res.data.message === "success") {
-        setBillSales(res.data.results);
-      }
-    } catch (e) {
+  // แบ่งหน้าและค้นเลขบิลที่ API (เดิมโหลดบิลทุกใบตั้งแต่เปิดร้านมาแบ่งหน้าที่หน้าเว็บ)
+  const list = useServerPagedList("/billSale/list", {
+    onError: (e) =>
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: getErrorMessage(e),
         icon: "error",
-      });
-    }
-  };
+      }),
+  });
+  const [selectBill, setSelectBill] = useState({});
 
   // ฟังก์ชันคำนวณยอดรวมต่อบิล
   const calculateTotal = (details) => {
@@ -48,7 +34,7 @@ function BillSales() {
           eyebrow="รายงาน / บิลขาย"
           title="รายงานบิลขาย"
           description="ตรวจสอบประวัติและรายละเอียดบิลขายทั้งหมดของร้าน"
-          count={`${list.filtered.length.toLocaleString("th-TH")} บิล`}
+          count={list.isLoading && list.total === 0 ? "…" : `${list.total.toLocaleString("th-TH")} บิล`}
         />
         <FilterBar>
           <SearchBox className="fb-search" value={list.search} onChange={list.setSearch} placeholder="ค้นหาเลขบิล" />
@@ -130,7 +116,7 @@ function BillSales() {
                   )}
                 </tbody>
               </table>
-<Pagination page={list.page} totalPages={list.totalPages} total={list.filtered.length} onChange={list.setPage} />
+<Pagination page={list.page} totalPages={list.totalPages} total={list.total} onChange={list.setPage} />
             </div>
           </div>
           

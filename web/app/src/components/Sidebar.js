@@ -5,6 +5,7 @@ import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
 import { NavLink } from "react-router-dom";
+import { getMemberInfo, getCountBill } from "../utils/memberCache";
 import PackageModal from "./sidebar/PackageModal";
 import BankModal from "./sidebar/BankModal";
 
@@ -24,20 +25,17 @@ const Sidebar = forwardRef((props, ref) => {
 
   useEffect(() => {
     const syncMember = () => {
-      fetchData();
+      fetchData(true); // แก้โปรไฟล์แล้ว: โหลดใหม่ไม่ใช้ cache
     };
     window.addEventListener("pos-member-updated", syncMember);
     return () => window.removeEventListener("pos-member-updated", syncMember);
   }, []);
 
-  const fetchDetaTotalBill = async () => {
+  const fetchDetaTotalBill = async (force = false) => {
     try {
-      const res = await axios.get(
-        config.api_path + "/package/countBill",
-        config.headers(),
-      );
-      if (res.data.totalBill !== undefined) {
-        setTotalBill(res.data.totalBill);
+      const data = await getCountBill(force);
+      if (data.totalBill !== undefined) {
+        setTotalBill(data.totalBill);
       }
     } catch (e) {
       Swal.fire({
@@ -48,16 +46,13 @@ const Sidebar = forwardRef((props, ref) => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = async (force = false) => {
     try {
-      const res = await axios.get(
-        config.api_path + "/member/info",
-        config.headers(),
-      );
-      if (res.data.message === "success") {
-        setMemberName(res.data.result.name);
-        setPackageName(res.data.result.package.name);
-        setBillAmount(res.data.result.package.bill_amount);
+      const data = await getMemberInfo(force);
+      if (data.message === "success") {
+        setMemberName(data.result.name);
+        setPackageName(data.result.package.name);
+        setBillAmount(data.result.package.bill_amount);
       }
     } catch (e) {
       Swal.fire({
@@ -171,7 +166,7 @@ const Sidebar = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     refreshCountBill() {
-      fetchDetaTotalBill();
+      fetchDetaTotalBill(true); // ปิดการขายแล้ว: โหลดใหม่ไม่ใช้ cache
     },
   }));
 

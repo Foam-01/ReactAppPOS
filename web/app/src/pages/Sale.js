@@ -6,6 +6,7 @@ import { closeModal } from "../utils/modal";
 import { getErrorMessage } from "../utils/error";
 import axios from "axios";
 import config from "../config";
+import { getMemberInfo } from "../utils/memberCache";
 import EmptyState from "../components/EmptyState";
 import PrintJS from "print-js";
 import QtyModal from "./sale/QtyModal";
@@ -356,7 +357,8 @@ function Sale() {
   const handlePrint = async () => {
     try {
       const [infoRes, bill] = await Promise.all([
-        axios.get(config.api_path + "/member/info", config.headers()),
+        // ชื่อร้านบนสลิป: ใช้ค่าที่ Sidebar โหลดไว้แล้ว ไม่ยิง API ซ้ำทุกครั้งที่พิมพ์
+        getMemberInfo().then((data) => ({ data })),
         handleLastBill(),
       ]);
       if (!bill) {

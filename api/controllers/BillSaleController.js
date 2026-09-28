@@ -9,6 +9,9 @@ const { Op } = require("sequelize");
 const { BILL_STATUS } = require("../constants");
 const conn = require("../connect");
 
+// คอลัมน์สินค้าที่หน้าเว็บใช้ในรายการบิล (เดิมส่งทุกคอลัมน์รวม detail/cost ซ้ำทุกแถว)
+const PRODUCT_BRIEF = ["id", "barcode", "name"];
+
 // ให้คำขอของร้านเดียวกันทำงานทีละคำขอ (กดซ้ำ/หลายเครื่องพร้อมกัน)
 // กันบิลเปิดซ้ำ, รายการซ้ำ และ qty หาย (lost update) โดยไม่ต้องแก้ schema
 // advisory lock ระดับ transaction: ปลดเองเมื่อ COMMIT/ROLLBACK
@@ -267,25 +270,50 @@ router.get("/billSale/billToday", service.isMember, async (req, res) => {
   }
 });
 
+// ไม่ส่ง page: คืนทุกบิลเหมือนเดิม · ส่ง ?page=&limit=&q= : แบ่งหน้าที่ฐานข้อมูล
+// (q = ค้นเลขบิล) แล้วเพิ่ม total/page/limit ในคำตอบ · results โครงเดิม
 router.get("/billSale/list", service.isMember, async (req, res) => {
-  
   try {
-    const results = await BillSaleModel.findAll({
+    const where = {
+      status: BILL_STATUS.PAY,
+      userId: service.getMemberId(req),
+    };
+    const query = {
       order: [["id", "DESC"]],
-      where: {
-        status: BILL_STATUS.PAY,
-        userId: service.getMemberId(req),
-      },
+      where,
       include: {
         model: BillSaleDetailModel,
         required: true, // ซ่อนบิลว่าง (ไม่มีรายการสินค้า) จากรายงาน
         include: {
           model: ProductModel,
+          attributes: PRODUCT_BRIEF,
         },
       },
-    });
+    };
 
-    res.send({ message: "success", results: results });
+    if (req.query.page === undefined) {
+      const results = await BillSaleModel.findAll(query);
+      return res.send({ message: "success", results: results });
+    }
+
+    const page = service.toPositiveInt(req.query.page) || 1;
+    const limit = Math.min(service.toPositiveInt(req.query.limit) || 20, 100);
+    const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    if (q) {
+      // เหมือนการค้นเดิมฝั่งหน้าเว็บ: เลขบิลที่มีข้อความนี้อยู่
+      where[Op.and] = conn.where(conn.cast(conn.col("billSales.id"), "text"), {
+        [Op.like]: `%${q.replace(/[\\%_]/g, "\\$&")}%`,
+      });
+    }
+
+    const { rows, count } = await BillSaleModel.findAndCountAll({
+      ...query,
+      limit,
+      offset: (page - 1) * limit,
+      distinct: true,
+      col: "id",
+    });
+    res.send({ message: "success", results: rows, total: count, page, limit });
   } catch (e) {
     service.sendError(res, e);
   }
@@ -323,6 +351,7 @@ router.get(
           required: true, // ซ่อนบิลว่าง (ไม่มีรายการสินค้า) จากรายงาน
           include: {
             model: ProductModel,
+            attributes: PRODUCT_BRIEF,
           },
         },
       });
@@ -360,5 +389,80 @@ router.get(
     }
   },
 );
+
+// สรุปสำหรับหน้าภาพรวมร้าน: รวมยอดในฐานข้อมูลแทนการส่งบิลทุกใบไปคำนวณที่หน้าเว็บ
+// นับเหมือน /billSale/list: เฉพาะบิลที่ชำระแล้วและมีรายการสินค้า · ยอด = qty × price
+router.get("/billSale/summary", service.isMember, async (req, res) => {
+  try {
+    const userId = service.getMemberId(req);
+    const tz = process.env.TZ || "Asia/Bangkok";
+    const PAID_ITEMS = `
+      FROM "billSales" b
+      JOIN "billSaleDetails" d ON d."billSaleId" = b.id
+      WHERE b."userId" = :userId AND b.status = :pay`;
+
+    // 7 วันล่าสุดรวมวันนี้ (นับวันตามเวลาไทย)
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(weekStart.getDate() - 6);
+
+    const replacements = { userId, pay: BILL_STATUS.PAY, tz, weekStart };
+    const q = (sql) => conn.query(sql, { replacements, type: conn.QueryTypes.SELECT });
+
+    const [[totals], week, top, recentBills, [stock]] = await Promise.all([
+      q(`SELECT COUNT(DISTINCT b.id) AS "totalBills",
+                COALESCE(SUM(d.qty * d.price), 0) AS "totalSales" ${PAID_ITEMS}`),
+      q(`SELECT to_char(b."createdAt" AT TIME ZONE :tz, 'YYYY-MM-DD') AS date,
+                SUM(d.qty * d.price) AS total ${PAID_ITEMS}
+           AND b."createdAt" >= :weekStart
+         GROUP BY 1`),
+      q(`SELECT COALESCE(p.name, 'ไม่ระบุชื่อ') AS name, SUM(d.qty) AS qty
+         FROM "billSales" b
+         JOIN "billSaleDetails" d ON d."billSaleId" = b.id
+         LEFT JOIN products p ON p.id = d."productId"
+         WHERE b."userId" = :userId AND b.status = :pay
+         GROUP BY 1 ORDER BY 2 DESC, 1 ASC LIMIT 5`),
+      BillSaleModel.findAll({
+        where: { status: BILL_STATUS.PAY, userId },
+        order: [["createdAt", "DESC"], ["id", "DESC"]],
+        limit: 5,
+        include: {
+          model: BillSaleDetailModel,
+          required: true,
+          include: { model: ProductModel, attributes: PRODUCT_BRIEF },
+        },
+      }),
+      // สต็อกคงเหลือต่อสินค้า นับแบบเดียวกับ /stock/report (รับเข้า − ทุกรายการขาย)
+      q(`SELECT COUNT(*) AS "productCount",
+                COALESCE(SUM(bal), 0) AS "totalStock",
+                COUNT(*) FILTER (WHERE bal < 0) AS "negativeCount"
+         FROM (
+           SELECT COALESCE(si.q, 0) - COALESCE(so.q, 0) AS bal
+           FROM products p
+           LEFT JOIN (SELECT "productId", SUM(qty) AS q FROM stocks GROUP BY 1) si ON si."productId" = p.id
+           LEFT JOIN (SELECT "productId", SUM(qty) AS q FROM "billSaleDetails" GROUP BY 1) so ON so."productId" = p.id
+           WHERE p."userId" = :userId
+         ) s`),
+    ]);
+
+    res.send({
+      message: "success",
+      results: {
+        totalBills: Number(totals.totalBills),
+        totalSales: Number(totals.totalSales),
+        weekSales: week.map((w) => ({ date: w.date, total: Number(w.total) })),
+        topProducts: top.map((t) => ({ name: t.name, qty: Number(t.qty) })),
+        recentBills,
+        stock: {
+          productCount: Number(stock.productCount),
+          totalStock: Number(stock.totalStock),
+          negativeCount: Number(stock.negativeCount),
+        },
+      },
+    });
+  } catch (e) {
+    service.sendError(res, e);
+  }
+});
 
 module.exports = router;

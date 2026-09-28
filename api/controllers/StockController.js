@@ -44,7 +44,8 @@ router.get('/stock/list', Service.isMember, async (req, res) => {
             },
             order: [['id', 'DESC']],
             include: {
-                model: ProductModel
+                model: ProductModel,
+                attributes: ['id', 'barcode', 'name']
             }
         })
 
@@ -82,14 +83,16 @@ router.get('/stock/report', Service.isMember, async (req, res) => {
                     model: StockModel,
                     separate: true,
                     include: {
-                        model: ProductModel
+                        model: ProductModel,
+                        attributes: ['id', 'barcode', 'name']
                     }
                 },
                 {
                     model: BillSaleDetailModel,
                     separate: true,
                     include: {
-                        model: ProductModel
+                        model: ProductModel,
+                        attributes: ['id', 'barcode', 'name']
                     }
                 }
             ],

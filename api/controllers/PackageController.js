@@ -12,6 +12,8 @@ router.get("/package/list", async (req, res) => {
     const results = await PackageModel.findAll({
       order: [["price", "ASC"]],
     });
+    // ข้อมูลสาธารณะ เปลี่ยนน้อย: ให้เบราว์เซอร์/CDN เก็บ 5 นาที
+    res.set("Cache-Control", "public, max-age=300");
     res.send(results);
   } catch (e) {
     Service.sendError(res, e);
@@ -74,7 +76,8 @@ router.get("/package/countBill", Service.isMember, async (req, res) => {
       59,
     );
 
-    const results = await BillSaleModel.findAll({
+    // นับในฐานข้อมูล ไม่ต้องดึงทุกแถวมานับ .length
+    const totalBill = await BillSaleModel.count({
       where: {
         userId: Service.getMemberId(req),
         createdAt: {
@@ -83,7 +86,7 @@ router.get("/package/countBill", Service.isMember, async (req, res) => {
       },
     });
 
-    res.send({ totalBill: results.length });
+    res.send({ totalBill: totalBill });
   } catch (e) {
     Service.sendError(res, e);
   }

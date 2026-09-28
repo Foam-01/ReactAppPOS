@@ -10,10 +10,19 @@ import Loading from "../components/Loading";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal"; // 🌟 อย่าลืม Import Modal เข้ามาด้วยนะครับ
 
+const EMPTY_SUMMARY = {
+  totalBills: 0,
+  totalSales: 0,
+  weekSales: [],
+  topProducts: [],
+  recentBills: [],
+  stock: { productCount: 0, totalStock: 0, negativeCount: 0 },
+};
+
 function Home() {
   const [products, setProducts] = useState([]);
-  const [bills, setBills] = useState([]);
-  const [stocks, setStocks] = useState([]);
+  // ยอดสรุปคำนวณที่ API (/billSale/summary) แทนการโหลดบิลและสต็อกทุกแถวมารวมเอง
+  const [summary, setSummary] = useState(EMPTY_SUMMARY);
   const [isLoading, setIsLoading] = useState(true);
 
   // 🌟 เพิ่ม State สำหรับเก็บบิลที่ถูกเลือกเพื่อดูรายละเอียด
@@ -26,21 +35,17 @@ function Home() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const [resProducts, resBills, resStocks] = await Promise.all([
+      const [resProducts, resSummary] = await Promise.all([
         axios
           .get(config.api_path + "/product/list", config.headers())
           .catch(() => ({ data: { results: [] } })),
         axios
-          .get(config.api_path + "/billSale/list", config.headers())
-          .catch(() => ({ data: { results: [] } })),
-        axios
-          .get(config.api_path + "/stock/report", config.headers())
-          .catch(() => ({ data: { results: [] } })),
+          .get(config.api_path + "/billSale/summary", config.headers())
+          .catch(() => ({ data: { results: EMPTY_SUMMARY } })),
       ]);
 
       setProducts(resProducts.data.results || []);
-      setBills(resBills.data.results || []);
-      setStocks(resStocks.data.results || []);
+      setSummary(resSummary.data.results || EMPTY_SUMMARY);
     } catch (e) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
@@ -64,24 +69,21 @@ function Home() {
       0,
     ) || 0;
 
-  const totalSales = bills.reduce((total, bill) => total + sumBill(bill), 0);
-  const avgBill = bills.length > 0 ? totalSales / bills.length : 0;
+  const totalSales = summary.totalSales;
+  const billCount = summary.totalBills;
+  const avgBill = billCount > 0 ? totalSales / billCount : 0;
 
-  const totalStock = stocks.reduce(
-    (total, item) => total + (Number(item.stockIn) - Number(item.stockOut)),
-    0,
-  );
-  const negativeStock = stocks.filter(
-    (item) => Number(item.stockIn) - Number(item.stockOut) < 0,
-  );
+  const totalStock = summary.stock.totalStock;
+  const negativeStockCount = summary.stock.negativeCount;
 
-  // ยอดขายรายวัน 7 วันล่าสุด (รวมวันนี้)
+  // ยอดขายรายวัน 7 วันล่าสุด (รวมวันนี้) · API ส่งเฉพาะวันที่มียอด
+  const weekTotals = Object.fromEntries(
+    summary.weekSales.map((d) => [d.date, d.total]),
+  );
   const weekSales = Array.from({ length: 7 }, (_, i) => {
     const day = dayjs().subtract(6 - i, "day");
     const key = day.format("YYYY-MM-DD");
-    const total = bills
-      .filter((bill) => dayjs(bill.createdAt).format("YYYY-MM-DD") === key)
-      .reduce((sum, bill) => sum + sumBill(bill), 0);
+    const total = weekTotals[key] || 0;
     return { key, total, label: day.format("DD/MM"), isToday: i === 6 };
   });
   const weekMax = Math.max(...weekSales.map((d) => d.total));
@@ -89,21 +91,9 @@ function Home() {
   const todaySales = weekSales[6].total;
 
   // สินค้าขายดี 5 อันดับ (ตามจำนวนชิ้น)
-  const productQty = {};
-  bills.forEach((bill) =>
-    bill.billSaleDetails?.forEach((item) => {
-      const name = item.product?.name || "ไม่ระบุชื่อ";
-      productQty[name] = (productQty[name] || 0) + Number(item.qty);
-    }),
-  );
-  const topProducts = Object.entries(productQty)
-    .map(([name, qty]) => ({ name, qty }))
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
+  const topProducts = summary.topProducts;
 
-  const recentBills = [...bills]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 5);
+  const recentBills = summary.recentBills;
 
   return (
     <Template>
@@ -125,7 +115,7 @@ function Home() {
         />
 
         {/* ผู้ใช้ใหม่: บอกขั้นตอนเริ่มต้น จนกว่าจะขายบิลแรก */}
-        {!isLoading && bills.length === 0 && (
+        {!isLoading && billCount === 0 && (
           <div className="card border-0 shadow-sm rounded-4 mb-4">
             <div className="card-body p-4">
               <h5 className="fw-bold text-dark mb-1">เริ่มต้นใช้งาน</h5>
@@ -133,7 +123,7 @@ function Home() {
               <div className="row g-3">
                 {[
                   { done: products.length > 0, to: "/product", icon: "fa-box-open", title: "1. เพิ่มสินค้า", desc: "ตั้งชื่อและราคาสินค้า" },
-                  { done: stocks.length > 0, to: "/stock", icon: "fa-truck-loading", title: "2. รับสินค้าเข้าสต็อก", desc: "ระบุจำนวนสินค้าที่มี" },
+                  { done: summary.stock.productCount > 0, to: "/stock", icon: "fa-truck-loading", title: "2. รับสินค้าเข้าสต็อก", desc: "ระบุจำนวนสินค้าที่มี" },
                   { done: false, to: "/sale", icon: "fa-cash-register", title: "3. เริ่มขาย", desc: "เลือกสินค้าแล้วรับเงิน" },
                 ].map((step) => (
                   <div className="col-md-4" key={step.to}>
@@ -167,7 +157,7 @@ function Home() {
             },
             {
               label: "จำนวนบิลขาย",
-              value: bills.length.toLocaleString(),
+              value: billCount.toLocaleString(),
               unit: "บิล",
               icon: "fa-receipt",
               tone: "primary",
@@ -186,10 +176,10 @@ function Home() {
               value: totalStock.toLocaleString(),
               unit: "ชิ้น",
               icon: "fa-cubes",
-              tone: negativeStock.length > 0 ? "danger" : "info",
+              tone: negativeStockCount > 0 ? "danger" : "info",
               note:
-                negativeStock.length > 0
-                  ? `${negativeStock.length} สินค้าสต็อกติดลบ`
+                negativeStockCount > 0
+                  ? `${negativeStockCount} สินค้าสต็อกติดลบ`
                   : "สต็อกปกติ",
             },
           ].map((kpi) => (
@@ -283,14 +273,14 @@ function Home() {
                   ))
                 )}
 
-                {negativeStock.length > 0 && (
+                {negativeStockCount > 0 && (
                   <Link
                     to="/ReportStock"
                     className="d-flex align-items-center mt-4 p-3 rounded-3 bg-danger-subtle text-danger text-decoration-none small"
                   >
                     <i className="fa-solid fa-triangle-exclamation me-2"></i>
                     <span className="flex-grow-1">
-                      สต็อกติดลบ {negativeStock.length} รายการ ควรรับสินค้าเข้าสต็อก
+                      สต็อกติดลบ {negativeStockCount} รายการ ควรรับสินค้าเข้าสต็อก
                     </span>
                     <i className="fa-solid fa-chevron-right"></i>
                   </Link>
